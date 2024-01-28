@@ -22,18 +22,19 @@ the object:
   
   ![XTAL+EEPROM](https://github.com/sueppchen/PixMob_waveband/assets/58486836/8d73dcba-42db-4f61-b4b3-9b6028d15b26)
   
-  beside is a small eeprom device which contents group information and maybe some predefined color effects
-  if the first byte of the eeprom is altered, the MCU reads back all eeprom-data and resets every value to factory default.
-  eeprom1.txt and eeprom2.txt are programmed devices, eeprom_reset.txt are factory defaults
+  + beside is a small i2c-eeprom device which contents group information and maybe some predefined color effects
+    - if the first byte of the eeprom is altered, the MCU reads back all eeprom-data and resets every value to factory default.
+    - eeprom1.txt and eeprom2.txt are programmed devices, eeprom_reset.txt are factory defaults
+    - address is 0b10100000 for reading and 0b10100001 for writing.
   
   
-  the MCU is unlabeled but it should be a dirt cheep device because the product is a "giveaway"
-  ( https://cpldcpu.wordpress.com/2019/08/12/the-terrible-3-cent-mcu/)
+  + the MCU is unlabeled but it should be a dirt cheep device because the product is a "giveaway"
+    ( https://cpldcpu.wordpress.com/2019/08/12/the-terrible-3-cent-mcu/)
   
   ![MCU](https://github.com/sueppchen/PixMob_waveband/assets/58486836/497c3a8c-62c1-48c1-b1f2-a0d007095368)
   
   
-  so my choice would be the PFS154-S08 because it has 3 pwm outputs
+    so my choice would be the PFS154-S08 because it has 3 pwm outputs
   
   + MCU Pinout:
    - 1 VCC   
