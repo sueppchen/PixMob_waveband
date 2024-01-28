@@ -24,6 +24,8 @@ the object:
   
   beside is a small eeprom device which contents group information and maybe some predefined color effects
   if the first byte of the eeprom is altered, the MCU reads back all eeprom-data and resets every value to factory default.
+  eeprom1.txt and eeprom2.txt are programmed devices, eeprom_reset.txt are factory defaults
+  
   
   the MCU is unlabeled but it should be a dirt cheep device ( https://cpldcpu.wordpress.com/2019/08/12/the-terrible-3-cent-mcu/)
   ![MCU](https://github.com/sueppchen/PixMob_waveband/assets/58486836/497c3a8c-62c1-48c1-b1f2-a0d007095368)
