@@ -9,16 +9,17 @@ the project:
 the object:
 
   got a waveband labeled "cement v1.1"
-  
   ![all](https://github.com/sueppchen/PixMob_waveband/assets/58486836/6f24268f-cfc5-4daa-93ae-c9d2c14f122d)
   
-  has an RF (maybe CMT2210LH)
+  it has an RF (maybe CMT2210LH)
   ![RF](https://github.com/sueppchen/PixMob_waveband/assets/58486836/27d4b4d4-64a9-4391-908f-28166be6646a)
   
   witch runs on 2.7V and is switched on and off by scl-line
   ![transistor+vreg](https://github.com/sueppchen/PixMob_waveband/assets/58486836/2c1df685-c942-491d-9bc7-c8434d9b0ffb)
   
-  the xtal frequency is 24.8117MHzfor europe(and 26.1522 for US variant) multiplied by 35 we have the nice 868.4MHz for europe and 915,327 for US.
+  the xtal frequency is 24.8117MHzfor europe(and 26.1522 for US variant)
+  --> multiplied by 35 we have the nice 868.4MHz for europe and 915,327 for US.
+  
   ![XTAL+EEPROM](https://github.com/sueppchen/PixMob_waveband/assets/58486836/8d73dcba-42db-4f61-b4b3-9b6028d15b26)
   
   beside is a small eeprom device which contents group information and maybe some predefined color effects
@@ -26,6 +27,7 @@ the object:
   
   the MCU is unlabeled but it should be a dirt cheep device ( https://cpldcpu.wordpress.com/2019/08/12/the-terrible-3-cent-mcu/)
   ![MCU](https://github.com/sueppchen/PixMob_waveband/assets/58486836/497c3a8c-62c1-48c1-b1f2-a0d007095368)
+  
   so my choice would be the PFS154-S08 because it has 3 pwm outputs
   MCU Pinout:
    1 VCC   
