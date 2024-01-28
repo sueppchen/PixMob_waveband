@@ -93,4 +93,4 @@ what we need:
   
    + the "advanced" arduino script is able to bruteforce the crc12 values for given 7 databytes
    + send custom hex messages or plain values
-      
+   + if you only want to brute force some CRCs, unsolder R7, connect arduino 7 directly to soic8 4 and comment out #define TRANSMIT 
