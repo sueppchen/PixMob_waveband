@@ -3,7 +3,7 @@
 the project:
   reverse engineering pixmob RF enabled waveband (868MHz european edition)
   
-  got it working thanks to https://github.com/danielweidman/pixmob-ir-reverse-engineering 
+  got it working thanks to https://github.com/danielweidman/pixmob-ir-reverse-engineering
   and  https://www.hackster.io/abouhatab/reusing-pixmob-waveband-without-flipper-zero-040f3a
 
 the object:
@@ -14,7 +14,7 @@ the object:
   it has an RF (maybe CMT2210LH)
   ![RF](https://github.com/sueppchen/PixMob_waveband/assets/58486836/27d4b4d4-64a9-4391-908f-28166be6646a)
   
-  witch runs on 2.7V and is switched on and off by scl-line
+  witch runs on 2.7V(VR1) and is switched on and off(Q1) by scl-line
   ![transistor+vreg](https://github.com/sueppchen/PixMob_waveband/assets/58486836/2c1df685-c942-491d-9bc7-c8434d9b0ffb)
   
   the xtal frequency is 24.8117MHzfor europe(and 26.1522 for US variant)
@@ -30,17 +30,19 @@ the object:
   the MCU is unlabeled but it should be a dirt cheep device ( https://cpldcpu.wordpress.com/2019/08/12/the-terrible-3-cent-mcu/)
   ![MCU](https://github.com/sueppchen/PixMob_waveband/assets/58486836/497c3a8c-62c1-48c1-b1f2-a0d007095368)
   
-  so my choice would be the PFS154-S08 because it has 3 pwm outputs
-  MCU Pinout:
-   1 VCC   
-   2 sda   
-   3 scl + /standby    
-   4 RX
-   5 PWM Red   
-   6 PWM Blue   
-   7 PWM Green   
-   8 GND 
   
+  so my choice would be the PFS154-S08 because it has 3 pwm outputs
+  
+  MCU Pinout:
+   - 1 VCC   
+   - 2 sda   
+   - 3 scl + /standby    
+   - 4 RX
+   - 5 PWM Red   
+   - 6 PWM Blue   
+   - 7 PWM Green   
+   - 8 GND 
+    
   PWM is running at about 25kHz but has some jitter in values (+- 0.5 %)  --> maybe softpwm
   LED is active low
   
@@ -77,7 +79,7 @@ what we need:
    + there is a basic CLI over USBserial@115200: type ? [enter] for help
   
   ADVNACED:
-   + pinmapping like basic plus
+   + pinmapping like basic - plus extra
      - Arduino GND--> soic8 8 GND    advanced only
      - Arduino  0 --> soic8 5 RED    advanced only
      - Arduino  1 --> soic8 7 GREEN  advanced only
