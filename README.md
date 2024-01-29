@@ -57,10 +57,10 @@ the object:
     - rules for 6b8b: max two 1 together, max four 0 togeter, max a single 1 @start and end, max two 0 @start and end. 0x55 and 0xaa are forbiden (sync)
     - LED values = 0-63
     - timing values are bit-coded (3 bit each)
-      * attack (0-7) = 0ms, 16ms, 80ms, ? ,440ms, ?, ?, ?
+      * attack (0-7) = 0ms, 16ms, 87ms, 173ms ,470ms, ?, ?, ?
       * random (0-7) = ??????,5%
-      * release(0-7) = bgcolor, 16ms, 80ms, ?, 440ms, ?, ?, ?
-      * hold   (0-7) = 48ms, 32ms, 115ms, 215ms, 516ms, ?, infinite
+      * release(0-7) = bgcolor, 16ms, 87ms, 173ms, 470ms, ?, ?, ?
+      * hold   (0-7) = 16ms, 49ms, 120ms, 222ms, 538ms, 1061ms, 2629ms, infinite
   
   
 what we need:
