@@ -55,12 +55,12 @@ the object:
     - each telegram starts with 0x55 0x55 for sync, then a single zero bit, a one bit, crc11:6, 7 databits, crc5:0
     - databits are: mode(unknown not tested yet), green, red, blue, attack+random, release + hold, group (not tested yet)
     - rules for 6b8b: max two 1 together, max four 0 togeter, max a single 1 @start and end, max two 0 @start and end. 0x55 and 0xaa are forbiden (sync)
-    - LED values = 0-63
+    - LED values = 0-63 with dimmer-curve
     - timing values are bit-coded (3 bit each)
-      * attack (0-7) = 0ms, 16ms, 87ms, 173ms ,470ms, ?, ?, ?
-      * random (0-7) = ??????,5%
-      * release(0-7) = bgcolor, 16ms, 87ms, 173ms, 470ms, ?, ?, ?
-      * hold   (0-7) = 16ms, 49ms, 120ms, 222ms, 538ms, 1061ms, 2629ms, infinite
+      * attack (0-7) = 0ms, 30ms, 100ms, 200ms ,500ms, 1000ms, 2500ms, ?
+      * random (0-7) = 0%, 7%, 15%, 40%, 56%, 75%, ?, ?
+      * release(0-7) = bgcolor, 30ms, 100ms, 200ms, 500ms, 1000ms, 2500ms, ?
+      * hold   (0-7) = 0ms, 30ms, 100ms, 200ms, 500ms, 1000ms, 2500ms, infinite
   
   
 what we need:
