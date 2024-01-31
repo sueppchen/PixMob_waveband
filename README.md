@@ -57,9 +57,9 @@ the object:
     - rules for 6b8b: max two 1 together, max four 0 togeter, max a single 1 @start and end, max two 0 @start and end. 0x55 and 0xaa are forbiden (sync)
     - LED values = 0-63 with dimmer-curve
     - timing values are bit-coded (3 bit each)
-      * attack (0-7) = 0ms, 30ms, 100ms, 200ms ,500ms, 1000ms, 2500ms, ?
-      * random (0-7) = 0%, 7%, 15%, 40%, 56%, 75%, ?, ?
-      * release(0-7) = bgcolor, 30ms, 100ms, 200ms, 500ms, 1000ms, 2500ms, ?
+      * attack (0-7) = 0ms, 30ms, 100ms, 200ms ,500ms, 1000ms, 2000ms, 4000ms
+      * random (0-7) = 0%, 10%, 20%, 35%, 50%, 65%, 80%, 95%
+      * release(0-7) = bgcolor, 30ms, 100ms, 200ms, 500ms, 1000ms, 2000ms, 4000ms
       * hold   (0-7) = 0ms, 30ms, 100ms, 200ms, 500ms, 1000ms, 2500ms, infinite
   
   
