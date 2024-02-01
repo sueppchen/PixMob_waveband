@@ -46,7 +46,7 @@ the object:
    - 7 PWM Green   
    - 8 GND 
     
-  + PWM is running at about 25kHz but has some jitter in values (+- 0.5 %)  --> maybe softpwm
+  + PWM is running at about 25kHz but has some jitter in values (+- 0.5 %)  --> maybe it is softpwm
   + LED is active low
   
   + @startup the MCU reads back few values from eeprom @adresses 00, 03, 02, 01, (if value@03 == 0x01) then read 08, else read 0b), 04
@@ -55,12 +55,12 @@ the object:
     - each telegram starts with 0x55 0x55 for sync, then a single zero bit, a one bit, crc11:6, 7 databits, crc5:0
     - databits are: mode(unknown not tested yet), green, red, blue, attack+random, release + hold, group (not tested yet)
     - rules for 6b8b: max two 1 together, max four 0 togeter, max a single 1 @start and end, max two 0 @start and end. 0x55 and 0xaa are forbiden (sync)
-    - LED values = 0-63 with dimmer-curve
-    - timing values are bit-coded (3 bit each)
-      * attack (0-7) = 0ms, 30ms, 100ms, 200ms ,500ms, 1000ms, 2000ms, 4000ms
-      * random (0-7) = 0%, 10%, 20%, 35%, 50%, 65%, 80%, 95%
-      * release(0-7) = bgcolor, 30ms, 100ms, 200ms, 500ms, 1000ms, 2000ms, 4000ms
-      * hold   (0-7) = 0ms, 30ms, 100ms, 200ms, 500ms, 1000ms, 2500ms, infinite
+    - LED values = 0 - 63 with dimmer-curve 0.5% - 94%
+    - timing values are bit-coded in byte 5 and byte 6 (3 bit each)
+      * attack  5:5..3 (0-7) = 0ms, 30ms, 100ms, 200ms ,500ms, 1000ms, 2000ms, 4000ms
+      * random  5:2..0 (0-7) = 0%, 10%, 20%, 35%, 50%, 65%, 80%, 95%
+      * release 6:5..3 (0-7) = bgcolor, 30ms, 100ms, 200ms, 500ms, 1000ms, 2000ms, 4000ms
+      * hold    6:2..0 (0-7) = 0ms, 30ms, 100ms, 200ms, 500ms, 1000ms, 2500ms, infinite
   
   
 what we need:
