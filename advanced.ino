@@ -1,5 +1,5 @@
 /*       testscript for PixMob waveband - (RF enabled crowd pixel)
- by sueppchen 2024 
+ 2024 sueppchen 
  
  arduino pro micro /ATmega32u4
  levelshifter
@@ -130,11 +130,12 @@ uint8_t byteArray[3][9] = {
       Serial.println();
     }
   void showBuffer(uint8_t* buffer){                                 // print buffer (plain + encoded)
+    Serial.print("plain: ");
     for(uint8_t i = 0; i < 9; i++ ) {
       Serial.print(buffer[i],HEX);
       Serial.print(" ");
       }
-    Serial.print(" = 6b8b:");
+    Serial.print(" = 6b8b: ");
     for(uint8_t i = 0; i < 9; i++ ) {
       Serial.print(lineCode(buffer[i]),HEX);
       Serial.print(" ");
@@ -370,14 +371,20 @@ uint8_t byteArray[3][9] = {
     }
 //
 // ------------------ SUBS --------------------
-//  
-// ------------------ MAIN --------------------
-void loop() {
-  commandLineInterface();
-  if(index > 0) sendMessage(byteArray[index-1]);
-  else if (crcTest){
-    
-    //wait for receiver to be ready - SCL goes low
+  void done(){
+    Serial.print("--- DONE ---");
+    index=0;
+    crcTest=false;
+    }
+  void testPins(){
+    for(byte i=0;i<50;i++){
+      sdain &= digitalRead(PINSDA);
+      redin &= digitalRead(PINRED);
+      greenin &= digitalRead(PINGREEN);
+      bluein &= digitalRead(PINBLUE);
+      }
+    }
+  void testScl(){
     sclin = digitalRead(PINSCL);
       if(sclin and sclAlt){
         delay(200);    //transmit new values
@@ -392,17 +399,22 @@ void loop() {
         active=false;    //transmit new values
         }
       sclAlt=sclin;
+
+    }
+//  
+// ------------------ MAIN --------------------
+void loop() {
+  commandLineInterface();
+  if(index > 0) sendMessage(byteArray[index-1]);
+  else if (crcTest){
     
+    //wait for receiver to be ready - SCL goes low
+    testScl();    
 
     if(active){
       sendMessage(byteArray[2]);       //transmit new values
       //poll pins
-      for(byte i=0;i<50;i++){
-        sdain &= digitalRead(PINSDA);
-        redin &= digitalRead(PINRED);
-        greenin &= digitalRead(PINGREEN);
-        bluein &= digitalRead(PINBLUE);
-        }
+      testPins();
       //did something happen?
       if(sdain == 0){
         Serial.print("\r\nsda: T=");
@@ -462,13 +474,11 @@ void loop() {
             byteArray[2][0] = crcIndexH;
             byteArray[2][8] = crcIndexL;
             }
-            else{                              // finished
-              testIndex=0;
-              crcIndexL=0;
-              crcIndexH=0;
-              Serial.print("--- DONE ---");
-              index=0;
-              crcTest=0;
+          else{                              // finished
+            testIndex=0;
+            crcIndexL=0;
+            crcIndexH=0;
+            done();
               }
           }
         }
@@ -488,9 +498,12 @@ void loop() {
         crcIndexL=0;
         crcIndexH=0;
         testIndex++;
-        byteArray[2][testByte] = testIndex;
-        sendMessage(byteArray[0]);                    //transmit wakeup
-        delay(5000);
+        if(testIndex>63) done();
+        else{
+          byteArray[2][testByte] = testIndex;
+          sendMessage(byteArray[0]);                    //transmit wakeup
+          delay(5000);
+          }
         match=0;
         sdain=1;redin=1;greenin=1;bluein=1;
         } 
