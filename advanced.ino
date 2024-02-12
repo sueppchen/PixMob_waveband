@@ -23,9 +23,9 @@
 
 // ------------ CLI ---------
   #define SEPARATOR    "+-------------------------------------------+"
-  #define TABLE_HEADER "| PixMob CLI-interface: type ? for help     |"
+  #define TABLE_HEADER "| PixMob CL-interface: type ? for help      |"
   #define PROMPT "> "
-  bool silent;
+  bool silent, debug;
 
 // ------------ TX ----------
   #include <ELECHOUSE_CC1101_SRC_DRV.h>       // for radio module
@@ -37,13 +37,13 @@
   #define SYNC1            0                  // 
   #define SYNC2            1                  // 
 
-byte index, indexAlt, repeatSet=1;
-bool crcTest, active, match;
-byte testIndex, testByte, repeat;
-byte crcIndexL,crcIndexH; 
-uint16_t  helper;
-uint8_t h;
+uint8_t index, indexAlt, repeatSet=1;
+bool crcTest, active, match, ledValue;
+uint8_t testByte, repeat;
+uint8_t h, exec;
 bool sclin = 1, sclAlt=1 , sdain = 1, redin = 1,greenin = 1,bluein = 1;
+
+uint32_t superValue;
 
 uint8_t byteArray[3][9] = {
   // 0     1     2     3     4     5     6     7     8       
@@ -53,7 +53,7 @@ uint8_t byteArray[3][9] = {
   };
 
 // ------------------ TX ---------------------- tx related stuff
-  uint8_t dictTable[64] = {
+  uint8_t dictTable[66] = {
     0x21,0x35,0x2c,0x34,0x66,0x26,0xac,0x24,     // 00-07
     0x46,0x56,0x44,0x54,0x64,0x6d,0x4c,0x6c,     // 08-0f
     0x92,0xb2,0xa6,0xa2,0xb4,0x94,0x86,0x96,     // 10-17
@@ -61,8 +61,9 @@ uint8_t byteArray[3][9] = {
     0x31,0xB1,0x95,0xB5,0x91,0x99,0x85,0x89,     // 20-27
     0xa5,0xa4,0x8c,0x84,0xa1,0xa9,0x8d,0xad,     // 28-2f
     0x9a,0x8a,0x5a,0x4a,0x49,0x59,0x52,0x51,     // 30-37
-    0x25,0x2d,0x69,0x29,0x4D,0x45,0x61,0x65      // 38-3f
-    };
+    0x25,0x2d,0x69,0x29,0x4D,0x45,0x61,0x65,      // 38-3f
+    0xaa,0x55};
+
   void initTX(){                                                    // init transmiter 
     Serial.print("init TX:");
     ELECHOUSE_cc1101.Init();                        // must be set to initialize the cc1101!
@@ -89,9 +90,10 @@ uint8_t byteArray[3][9] = {
     }
 
   uint8_t lineCode(uint8_t inByte){                                 // convert plain values into 6b8b line code
-    inByte &= 0x3f;
+    inByte &= 0x7f;
     return dictTable[inByte];
     }
+  
   uint8_t reverseLineCode(uint8_t inByte){                          //convert 6b8b line code into plain values
     for(uint8_t i = 0; i<64; i++)
       if(inByte == dictTable[i]) 
@@ -130,14 +132,15 @@ uint8_t byteArray[3][9] = {
       Serial.println();
     }
   void showBuffer(uint8_t* buffer){                                 // print buffer (plain + encoded)
-    Serial.print("plain: ");
-    for(uint8_t i = 0; i < 9; i++ ) {
-      Serial.print(buffer[i],HEX);
-      Serial.print(" ");
-      }
-    Serial.print(" = 6b8b: ");
+    Serial.print("LC: ");
     for(uint8_t i = 0; i < 9; i++ ) {
       Serial.print(lineCode(buffer[i]),HEX);
+      Serial.print(" ");
+      }
+    Serial.print("P: ");
+    for(uint8_t i = 0; i < 9; i++ ) {
+      if( buffer[i] < 0x10) Serial.print("0");
+      Serial.print(buffer[i],HEX);
       Serial.print(" ");
       }
     Serial.print("\r\n");
@@ -219,23 +222,23 @@ uint8_t byteArray[3][9] = {
         showLineCode();
         index=0x0;
         crcTest=1;
-        Serial.print("mode   (0-3f)");
+        Serial.print("1 mode   (0-3f)");
          byteArray[2][1] = ((uint8_t) readCliHex() ) & 0x3f;
-        Serial.print("red    (0-63)");
+        Serial.print("3 red    (0-63)");
          byteArray[2][3] = ((uint8_t) readCliDez() ) & 0x3f; 
-        Serial.print("green  (0-63)");
+        Serial.print("2 green  (0-63)");
          byteArray[2][2] = ((uint8_t) readCliDez() ) & 0x3f;
-        Serial.print("blue   (0-63)");
+        Serial.print("4 blue   (0-63)");
          byteArray[2][4] = ((uint8_t) readCliDez() ) & 0x3f; 
-        Serial.print("attack (0-7)");
+        Serial.print("5 attack (0-7)");
          byteArray[2][5] = (((uint8_t) readCliDez() ) & 0x7) << 3; 
-        Serial.print("random (0-7)");
+        Serial.print("5 random (0-7)");
          byteArray[2][5] += ((uint8_t) readCliDez() ) & 0x7; 
-        Serial.print("release(0-7)");
+        Serial.print("6 release(0-7)");
          byteArray[2][6] = (((uint8_t) readCliDez() ) & 0x7) << 3; 
-        Serial.print("hold   (0-7)");
+        Serial.print("6 hold   (0-7)");
          byteArray[2][6] += ((uint8_t) readCliDez() ) & 0x7; 
-        Serial.print("Group  (0-3f)");
+        Serial.print("7 Group  (0-3f)");
          byteArray[2][7] = ((uint8_t) readCliHex() ) & 0x3f; 
          repeatSet = (byteArray[2][5] & 0x7) + (byteArray[2][5] >> 4);  //high random and slow attack --> slow testing
 
@@ -257,19 +260,23 @@ uint8_t byteArray[3][9] = {
         silent = ! silent;
         Serial.println( silent? "silent..." : "verbose...");
         break;
+      case 'v':  // toggle debug
+        debug = ! debug;
+        Serial.println( debug? "debug on..." : "debug off...");
+        break;
       case 'a':  // custom transfer raw 6b8b string
         Serial.println(" send raw 6b8b data ");
         showLineCode();
         Serial.print("input crc1   (hex8)"); 
-         byteArray[2][0] = reverseLineCode((uint8_t) readCliDez());
+         byteArray[2][0] = reverseLineCode((uint8_t) readCliHex());
         Serial.print("input mode   (hex8)"); 
          byteArray[2][1] = reverseLineCode((uint8_t) readCliHex());
         Serial.print("input green  (hex8)");
-         byteArray[2][2] = reverseLineCode((uint8_t) readCliDez());
+         byteArray[2][2] = reverseLineCode((uint8_t) readCliHex());
         Serial.print("input red    (hex8)");
-         byteArray[2][3] = reverseLineCode((uint8_t) readCliDez());
+         byteArray[2][3] = reverseLineCode((uint8_t) readCliHex());
         Serial.print("input blue   (hex8)");
-         byteArray[2][4] = reverseLineCode((uint8_t) readCliDez());
+         byteArray[2][4] = reverseLineCode((uint8_t) readCliHex());
         Serial.print("input rise   (hex8)");
          byteArray[2][5] = reverseLineCode((uint8_t) readCliHex());
         Serial.print("input fall   (hex8)");
@@ -277,7 +284,7 @@ uint8_t byteArray[3][9] = {
         Serial.print("input group  (hex8)");
          byteArray[2][7] = reverseLineCode((uint8_t) readCliHex());
         Serial.print("input crc2   (hex8)");
-         byteArray[2][8] = reverseLineCode((uint8_t) readCliDez());
+         byteArray[2][8] = reverseLineCode((uint8_t) readCliHex());
         Serial.print("\r\nsending string:\r\n");
         showBuffer(byteArray[2]);
         index=0x03;
@@ -301,25 +308,33 @@ uint8_t byteArray[3][9] = {
       case 'c':  // transfer string and brute CRC
         Serial.println(" transfer & brute CRC ");
         valueInput();                              //get plain values
-        crcIndexH = 0 ;
-        byteArray[2][0] = crcIndexH;
-        crcIndexL = 0;
-        byteArray[2][8] = crcIndexL;
+        Serial.print("start crcH (0-3f) = (hex8):"); byteArray[2][0]=( (uint8_t) readCliHex() ) & 0x3f;
+        Serial.print("start crcL (0-3f) = (hex8):"); byteArray[2][8]=( (uint8_t) readCliHex() ) & 0x3f; 
+        testByte = 2;
         Serial.print(" .. testing .. \r\n");
         showBuffer(byteArray[2]);
-        testIndex = 63; //run once
+        exec = 'c';
         break;
       case 'd':  // CRC brute force 
         Serial.println(" CRC-byte-test ");
         valueInput();
-        Serial.print("start crcH (0-3f) = (hex8):");
-         crcIndexH=( (uint8_t) readCliHex() ) & 0x3f;
-         byteArray[2][0] = crcIndexH;
-        Serial.print("start crcL (0-3f) = (hex8):");
-         crcIndexL=( (uint8_t) readCliHex() ) & 0x3f; 
-         byteArray[2][8] = crcIndexL;
+        Serial.print("testByte (1-7) =:");           testByte=( (uint8_t) readCliHex() ) & 0x7;
+        Serial.print("startValue (0-3f) =:");        byteArray[2][testByte]=( (uint8_t) readCliHex() ) & 0x3f;
+        Serial.print("start crcH (0-3f) = (hex8):"); byteArray[2][0]=( (uint8_t) readCliHex() ) & 0x3f;
+        Serial.print("start crcL (0-3f) = (hex8):"); byteArray[2][8]=( (uint8_t) readCliHex() ) & 0x3f; 
         Serial.print(" .. testing .. \r\n");
         showBuffer(byteArray[2]);
+        exec = 'd';
+        break;
+      case 'e':  // all Color brute force 
+        Serial.println(" CRC-color-test ");
+        valueInput();
+        testByte = 2;
+        Serial.print("start crcH (0-3f) = (hex8):"); byteArray[2][0] = ( (uint8_t) readCliHex() ) & 0x3f;
+        Serial.print("start crcL (0-3f) = (hex8):"); byteArray[2][8] = ( (uint8_t) readCliHex() ) & 0x3f; 
+        Serial.print(" .. testing .. \r\n");
+        showBuffer(byteArray[2]);
+        exec = 'e';
         break;
       case '+':  // show value-table
         showLineCode();
@@ -332,10 +347,12 @@ uint8_t byteArray[3][9] = {
         Serial.println(" 1 - black, device wakeup");
         Serial.println(" 2 - smoth red fade");
         Serial.println(" s - toggle silent mode");
+        Serial.println(" v - toggle debug mode");
         Serial.println(" a - send raw 6b8b frame");
         Serial.println(" b - send raw plain frame");
         Serial.println(" c - send new values + brute the CRC");
         Serial.println(" d - bruteforce single byte CRC");
+        Serial.println(" e - bruteforce all colors");
         Serial.println(" + - print 6b8b table");
         Serial.println(" ? - this help");
         Serial.println(SEPARATOR);
@@ -345,6 +362,7 @@ uint8_t byteArray[3][9] = {
       }
     if(byte(selection) > 0){
       printPrompt();
+
       }
     }
 //
@@ -401,6 +419,93 @@ uint8_t byteArray[3][9] = {
       sclAlt=sclin;
 
     }
+  void wakeUp(){
+    delay(40);
+    sendMessage(byteArray[0]);                    //transmit wakeup
+    }
+  void next(bool end){
+    ledValue != ledValue;            //blink
+
+    //  29..24    23..18    17..12    11..6      5..0
+    // array2.4, array2.3, testIndex, crcIndexH, crcIndexL
+
+    superValue =  (uint32_t)byteArray[2][4] << 24;
+    superValue += (uint32_t)byteArray[2][3] << 18;
+    superValue += (uint32_t)byteArray[2][testByte] << 12;
+    superValue += (byteArray[2][0] << 6);
+    superValue += (byteArray[2][8]);
+
+
+    if((exec == 'c') & ((superValue & 0xfff) == 0xfff)) done();
+    if(((exec == 'd') | (exec == 'e')) & ((superValue & 0xfff) == 0xfff)){
+      Serial.print("CRC not Found\r\n");
+      }
+    if((exec == 'd') & ((superValue & 0x3ffff) == 0x3ffff)) done();
+    if((exec == 'e') & ((superValue & 0xffffff) == 0xffffff)) done();
+
+    if(end)  superValue |= 0xfff;                                             //crc = end --> next
+    
+    superValue ++;
+    
+
+    if(exec == 'e'){
+      h = (superValue >> 24) & 0x3f;
+      byteArray[2][4] = h;
+      if(debug){
+        Serial.print(" ");
+        if(h<0x10) Serial.print("0");
+        Serial.print(h,HEX);
+        }
+      h = (superValue >> 18) & 0x3f;
+      byteArray[2][3] = h;
+      if(debug){
+        Serial.print(" ");
+        if(h<0x10) Serial.print("0");
+        Serial.print(h,HEX);
+        }  
+      }
+
+    if((exec == 'e') | (exec == 'd')){
+      h = (superValue >> 12) & 0x3f;
+      byteArray[2][testByte] = h;
+      if(debug){
+        Serial.print(":");
+        if(h<0x10) Serial.print("0");
+        Serial.print(h,HEX);
+        }
+      }
+
+    if((exec == 'e') | (exec == 'd') | (exec == 'c')){
+      h = (superValue >> 6) & 0x3f;
+      byteArray[2][0] = h;
+      if(debug){
+        Serial.print("-");
+        if(h<0x10) Serial.print("0");
+        Serial.print(h,HEX);
+        }
+      h = superValue & 0x3f;
+      byteArray[2][8] =  h;
+      if(debug){
+        Serial.print("");
+        if(h<0x10) Serial.print("0");
+        Serial.print(h,HEX);
+        }  
+      }
+
+    if((debug) & ((superValue % 0x8) == 0)) Serial.println();
+    if((superValue % 0x80) == 0){
+      wakeUp();
+      if((!silent) & (!debug)){
+        h = (superValue >> 6) & 0x3f;
+        Serial.print(",");
+        if(h<0x10) Serial.print("0");
+        Serial.print(h,HEX);
+        if((superValue % 0x100) == 0) Serial.println();
+        
+      } 
+    } 
+
+    }
 //  
 // ------------------ MAIN --------------------
 void loop() {
@@ -412,27 +517,32 @@ void loop() {
     testScl();    
 
     if(active){
+      if(debug & (repeat==0)){
+        //Serial.print(char(exec));
+        Serial.print(", ");
+        }  
+      
       sendMessage(byteArray[2]);       //transmit new values
       //poll pins
       testPins();
       //did something happen?
       if(sdain == 0){
-        Serial.print("\r\nsda: T=");
+        if(!silent) Serial.print("\r\nsda: T=");
         sdain=1;
         match = 1;
         }
       else if(redin == 0){
-        Serial.print("\r\nred: T=");
+        if(!silent) Serial.print("\r\nred: T=");
         redin=1;
         match = 1;
         }
       else if(greenin == 0){
-        Serial.print("\r\ngreen: T=");
+        if(!silent) Serial.print("\r\ngreen: T=");
         greenin=1;
         match=1;
         }
       else if(bluein == 0){
-        Serial.print("\r\nblue: T=");
+        if(!silent) Serial.print("\r\nblue: T=");
         bluein=1;
         match=1;
         }
@@ -441,74 +551,32 @@ void loop() {
         //if(false) repeat++;
         else{
           repeat=0;
-          
           //go ahead!
-          if(testIndex < 64){
-            if(crcIndexH < 64){
-              if(crcIndexL < 64) crcIndexL++;
-              else{
-                delay(40);
-                sendMessage(byteArray[0]);                    //transmit wakeup
-                if(!silent){
-                  if((crcIndexH + 1)% 0x10 == 0) Serial.println();
-                  Serial.print(crcIndexH,HEX);
-                  Serial.print("xx");
-                  Serial.print(" ");
-                  }
-                crcIndexL = 0;
-                crcIndexH++;
-                }
-              }
-
-            else{                              //no crc found, back to off
-              Serial.print("\r\nxxx:T=");
-              Serial.print(testIndex,HEX);
-              Serial.println(": no crc found");
-              testIndex++;
-              byteArray[2][testByte] = testIndex;
-
-              crcIndexL=0;
-              crcIndexH=0;
-              }
-            //calculate new command
-            byteArray[2][0] = crcIndexH;
-            byteArray[2][8] = crcIndexL;
-            }
-          else{                              // finished
-            testIndex=0;
-            crcIndexL=0;
-            crcIndexH=0;
-            done();
-              }
+          next(0);
           }
-        }
+        }  
 
       if(match){
         if(!silent){
-          Serial.print(testIndex,HEX);
+          Serial.print(byteArray[2][testByte],HEX);
           Serial.print(" C=");
-          Serial.print(crcIndexH,HEX);
-          Serial.print(crcIndexL,HEX);
+          Serial.print(byteArray[2][0],HEX);
+          Serial.print(byteArray[2][8],HEX);
           Serial.print("\r\nfound\r\n");
           }
-        else 
-          Serial.println();
         showBuffer(byteArray[2]);
         
-        crcIndexL=0;
-        crcIndexH=0;
-        testIndex++;
-        if(testIndex>63) done();
-        else{
-          byteArray[2][testByte] = testIndex;
-          sendMessage(byteArray[0]);                    //transmit wakeup
-          delay(5000);
-          }
+        next(1);
+        
+        sendMessage(byteArray[0]);                    //transmit wakeup
+        delay(5000);
         match=0;
         sdain=1;redin=1;greenin=1;bluein=1;
         } 
+      
       }
     }
+  digitalWrite(LED,ledValue);
   delay(40);
   indexAlt=index;
   }
