@@ -1,25 +1,41 @@
 /*       testscript for PixMob waveband - (RF enabled crowd pixel)
  2024 sueppchen 
  
- arduino pro micro /ATmega32u4
- levelshifter
- cc1101 radio module
- 5 test-wires, power, ground
- bk GND, rd VCC5, ye 3 SCL, bn 2 SDA, bl 0 TX, gn 1 RX, or 8
+ TX:
+  arduino pro micro /ATmega32u4
+  levelshifter
+  cc1101 radio module
+  5 test-wires, power, ground
+  bk GND, rd VCC5, ye 3 SCL, bn 2 SDA, bl 0 TX, gn 1 RX, or 8
+ 
+ NO TX:
+  Arduino nano / mini Pro ATmega328
+  GND, R, G, B, SCL, TX, VCC5
 */
+// ------------ global ------------
+  //#define TRANSMITTER
+
 
 // ------------ I/O ------------
   //#include <YetAnotherPcInt.h>                // for PCint
-  #define RADIO_GD0 7
-  #define RADIO_GD2 6
-
-  #define LED 13
-
-  #define PINRED   0        //normalInt
-  #define PINGREEN 1
-  #define PINSDA   2
-  #define PINSCL   3
-  #define PINBLUE  8
+  #ifdef TRANSMITTER                              // ATmega32u4 = micro Pro
+    #define PINRED   0        //normalInt
+    #define PINGREEN 1
+    #define PINSDA   2
+    #define PINSCL   3
+    #define PINBLUE  8
+    #define RADIO_GD0 7                           // data output
+    #define RADIO_GD2 6
+    #define LED 13
+  #else                                           //ATmega328 = nano, Mini Pro
+    #define PINRED   2        
+    #define PINGREEN 3
+    #define PINBLUE  4
+    #define PINSCL   5
+    #define PINSDA   6
+    #define RADIO_GD0 7                           // data output
+    #define LED 13
+  #endif
 
 // ------------ CLI ---------
   #define SEPARATOR    "+-------------------------------------------+"
@@ -28,14 +44,16 @@
   bool silent, debug;
 
 // ------------ TX ----------
-  #include <ELECHOUSE_CC1101_SRC_DRV.h>       // for radio module
-  #define TRANSMIT
-  #define TX_FREQ     868.49                  // transmit frequency
   #define BIT_TIME       500                  // inter bit delay ... us
   #define START_DELAY    800                  // wait until hf is present ... us
   #define PREAMBLE      0x55                  // preamble ... send twice
   #define SYNC1            0                  // 
   #define SYNC2            1                  // 
+  
+  #ifdef TRANSMITTER
+    #include <ELECHOUSE_CC1101_SRC_DRV.h>       // for radio module
+    #define TX_FREQ     868.49                  // transmit frequency
+  #endif
 
 uint8_t index, indexAlt, repeatSet=1;
 bool crcTest, active, match, ledValue;
@@ -65,17 +83,21 @@ uint8_t byteArray[3][9] = {
     0xaa,0x55};
 
   void initTX(){                                                    // init transmiter 
-    Serial.print("init TX:");
-    ELECHOUSE_cc1101.Init();                        // must be set to initialize the cc1101!
-    Serial.println(" done");
-    ELECHOUSE_cc1101.SetTx();
-    ELECHOUSE_cc1101.setGDO(RADIO_GD0,RADIO_GD2);   // set lib internal gdo pin (gdo0). Gdo2 not use for this example.
-    ELECHOUSE_cc1101.setModulation(2);              // set modulation mode. 0 = 2-FSK, 1 = GFSK, 2 = ASK/OOK, 3 = 4-FSK, 4 = MSK.
-    ELECHOUSE_cc1101.setCCMode(0);                  // set 1 config for internal FiFo mode. 0 for Assync external Mode
-    ELECHOUSE_cc1101.setMHZ(TX_FREQ);                // Here you can set your basic frequency. The lib calculates the frequency automatically (default = 433.92).The cc1101 can: 300-348 MHZ, 387-464MHZ and 779-928MHZ. Read More info from datasheet.
-    ELECHOUSE_cc1101.setChannel(0);                 // Set the Channelnumber from 0 to 255. Default is cahnnel 0.
-    Serial.println("Tx ready");
-    pinMode(RADIO_GD0, OUTPUT);
+    #ifdef TRANSMITTER
+      Serial.print("init TX:");
+      ELECHOUSE_cc1101.Init();                        // must be set to initialize the cc1101!
+      Serial.println(" done");
+      ELECHOUSE_cc1101.SetTx();
+      ELECHOUSE_cc1101.setGDO(RADIO_GD0,RADIO_GD2);   // set lib internal gdo pin (gdo0). Gdo2 not use for this example.
+      ELECHOUSE_cc1101.setModulation(2);              // set modulation mode. 0 = 2-FSK, 1 = GFSK, 2 = ASK/OOK, 3 = 4-FSK, 4 = MSK.
+      ELECHOUSE_cc1101.setCCMode(0);                  // set 1 config for internal FiFo mode. 0 for Assync external Mode
+      ELECHOUSE_cc1101.setMHZ(TX_FREQ);                // Here you can set your basic frequency. The lib calculates the frequency automatically (default = 433.92).The cc1101 can: 300-348 MHZ, 387-464MHZ and 779-928MHZ. Read More info from datasheet.
+      ELECHOUSE_cc1101.setChannel(0);                 // Set the Channelnumber from 0 to 255. Default is cahnnel 0.
+      Serial.println("Tx ready");
+      pinMode(RADIO_GD0, OUTPUT);
+    #else
+      Serial.println("no TX");
+    #endif
     }
   void transmitBit(bool txBit){                                     // transmit single bit
     digitalWrite(RADIO_GD0,txBit);
@@ -101,7 +123,7 @@ uint8_t byteArray[3][9] = {
     return 0xff;
     }
   void sendMessage(uint8_t* buffer){                                // transmit one frame
-    #ifdef TRANSMIT
+    #ifdef TRANSMITER
       ELECHOUSE_cc1101.SetTx();                                     //enable transmitter
     #endif
     delayMicroseconds(START_DELAY);                                 //wait until hf is present
@@ -114,7 +136,9 @@ uint8_t byteArray[3][9] = {
     //payload: crc1, mode, green, red, blue, rise, fall, group, crc2
     for(uint8_t byteCounter=0; byteCounter < 9; byteCounter++ )
       transmitByte( lineCode( buffer[byteCounter] ) );
-    ELECHOUSE_cc1101.SetRx() ;                                    // disable transmitter
+    #ifdef TRANSMITTER
+      ELECHOUSE_cc1101.SetRx() ;                                    // disable transmitter
+    #endif
     }
 //
 // ------------------ CLI --------------------- command line interface
