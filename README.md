@@ -93,7 +93,7 @@ what we need:
   
    + the "advanced" arduino script is able to bruteforce the crc12 values for given 7 databytes
    + send custom hex messages or plain values
-   + if you only want to brute force some CRCs, unsolder R7, connect arduino 7 directly to soic8 4 and comment out #define TRANSMIT
+   + if you only want to brute force some CRCs, unsolder R7, connect arduino 7 directly to soic8 4 and comment out #define TRANSMITER
    + the checksum is a bit tricky, there are 12 bit of checksum and there seems to be no simple rule(bitwise Xor, bytewise Xor, crc12, cut crc16, shifted crc16) to build it...BUT:
      - some combinations give the same checksum --> yeah: brute force until the result is equal see crcBrute.py
      - some combinations give NO checksum --> someone told me to have a look at the things you DON'T see... 
