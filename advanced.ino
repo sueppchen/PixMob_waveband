@@ -393,6 +393,7 @@ uint8_t byteArray[3][9] = {
 // ------------------ SETUP ------------------- arduino setup
   void setup() {                                    //SETUP
     pinMode(LED, OUTPUT);
+    pinMode(RADIO_GD0, OUTPUT);
     pinMode(PINSCL, INPUT);
     //PcInt::attachInterrupt(PINSCL, SCL_ISR, FALLING);
     pinMode(PINSDA, INPUT);
