@@ -27,6 +27,7 @@
     #define RADIO_GD0 7                           // data output
     #define RADIO_GD2 6
     #define LED 13
+    #define START_DELAY    800                  // wait until hf is present ... us
   #else                                           //ATmega328 = nano, Mini Pro
     #define PINRED   2        
     #define PINGREEN 3
@@ -35,6 +36,7 @@
     #define PINSDA   6
     #define RADIO_GD0 7                           // data output
     #define LED 13
+    #define START_DELAY    1                  // wait until hf is present ... us
   #endif
 
 // ------------ CLI ---------
@@ -45,7 +47,6 @@
 
 // ------------ TX ----------
   #define BIT_TIME       500                  // inter bit delay ... us
-  #define START_DELAY    800                  // wait until hf is present ... us
   #define PREAMBLE      0x55                  // preamble ... send twice
   #define SYNC1            0                  // 
   #define SYNC2            1                  // 
@@ -65,6 +66,8 @@ uint32_t superValue;
 
 uint8_t byteArray[3][9] = {
   // 0     1     2     3     4     5     6     7     8       
+// 0b1101010, 0b100001, 0b100001, 0b100001, 0b100001, 0b1000110, 0b1101100, 0b100001, 0b10010100
+  // 6a
   {0x1B, 0x00, 0x00, 0x00, 0x00, 0x08, 0x0F, 0x00, 0x15}, //1, black as background, active for 1 minute
   {0x37, 0x00, 0x00, 0x3f, 0x00, 0x38, 0x3E, 0x00, 0x20}, //2, red, smoooooooth fade
   {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, //3, test-string
@@ -139,6 +142,7 @@ uint8_t byteArray[3][9] = {
     #ifdef TRANSMITTER
       ELECHOUSE_cc1101.SetRx() ;                                    // disable transmitter
     #endif
+    digitalWrite(RADIO_GD0,0);
     }
 //
 // ------------------ CLI --------------------- command line interface
@@ -188,7 +192,7 @@ uint8_t byteArray[3][9] = {
 
 
   uint64_t readCliHex(){                                            // read cli hex value
-    char buffer[20];
+    char buffer[5];
     uint8_t idx = 0;
 
     while (true){
@@ -210,7 +214,7 @@ uint8_t byteArray[3][9] = {
       }
     }
   uint64_t readCliDez(){                                            // read 
-    char buffer[20];
+    char buffer[5];
     uint8_t idx = 0;
 
     while (true){
@@ -404,7 +408,7 @@ uint8_t byteArray[3][9] = {
     //attachInterrupt(digitalPinToInterrupt(PINGREEN), GREEN_ISR, FALLING);
     pinMode(PINBLUE, INPUT);
     //attachInterrupt(digitalPinToInterrupt(PINBLUE), BLUE_ISR, FALLING);
-    Serial.begin(115200);                     // debug
+    Serial.begin(9600);                     // debug
     delay(3000);
     initTX();
     Serial.println("done");
