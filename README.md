@@ -98,3 +98,5 @@ what we need:
      - some combinations give the same checksum --> yeah: brute force until the result is equal see crcBrute.py
      - some combinations give NO checksum --> someone told me to have a look at the things you DON'T see... 
      - I got nearly all values from minimum 00,04 to 3f,3f with small gaps --> 00,00 seems to be forbidden
+
+I started a little bruteforce-session ... the results are in the folder colorBrute/
