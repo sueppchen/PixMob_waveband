@@ -100,3 +100,15 @@ what we need:
      - I got nearly all values from minimum 00,04 to 3f,3f with small gaps --> 00,00 seems to be forbidden
 
 I started a little bruteforce-session ... the results are in the folder colorBrute/
+ + a single pixmob-arduino core will take 512 days to brute all RGB-checksums - much to long.
+
+DUAL FRONTEND:
+ + this is made for automatic bruteforcing with more clients. the idea is that one pi zero can handle all traffic and store all forced data.
+ + flow: 
+   - pi sends color-data to the free enpoint
+   - the endpoint forces the crc
+   - color and crc are reported back to pi
+   - pi stores the values in a file and marks the endpoint as idle again
+   - repeat
+ + each arduino can handle 2 endpoints.
+
