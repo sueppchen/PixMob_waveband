@@ -100,7 +100,14 @@ what we need:
      - I got nearly all values from minimum 00,04 to 3f,3f with small gaps --> 00,00 seems to be forbidden
 
 I started a little bruteforce-session ... the results are in the folder colorBrute/
- + a single pixmob-arduino core will take 512 days to brute all RGB-checksums - much to long.
+ + a single pixmob-arduino core will take about 512 days to brute all 262144 RGB-checksums - much to long
+ + so ... lets speed things up:
+ + first idea use more in parallel
+   - i only have 3 pi zero W (plus 1 pi zero 2 ) and also only 4 arduino pro micro as 3.3V variant and no more level shifters.
+   - arduinoIDE is not running on PIzeroW --> I use GTKterm this is not that comfortable. (select all does only select all visible not all in buffer!)
+   - so i only can use 5 pixmobs in parallel each zeroW one and the zero2 two.
+   - i have to stitch the files per hand
+   - I will automate this a bit... next time
 
 DUAL FRONTEND:
  + this is made for automatic bruteforcing with more clients. the idea is that one pi zero can handle all traffic and store all forced data.
