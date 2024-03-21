@@ -202,41 +202,19 @@ def main(args):
     for zeile in trueList:
         gleiche[zeile[1]*64 + zeile[9]] += 1
 
-#        if (zeile[1] == 0):
-#            if(zeile[9] == 1):
-    
-    #write to file
-#    with io.open("colorBrute/out.txt", 'w') as datei:
-#        for value in range(0, 4096):
-#            if (gleiche[value] == 0):
-#                datei.write(str(value >> 6) + "+" +str(value & 0x3f) + " = 0\r\n")
-#                print(str(value >> 6) + "+" +str(value & 0x3f) + " = 0")
+    for value in range(0, 4096):
+        if (gleiche[value] == 0):
+            print(str(value >> 6) + "+" +str(value & 0x3f) + " = 0")
 
+    for zeile in falseList:
+        print(zeile)
 
+    print(gleiche)
+
+    print("len list = %d" % len(mainList))
 
     standby()
     tty.close
-
-#    for zeile in falseList:
-#        print(zeile)
-#    print(gleiche)
-
-#        if(zeile[0] == False):
-#            print (zeile)
-#    print(len(mainList))
- 
-                
-            #liste.append(bytearray.fromhex(line.rstrip()[34:35])
-#            lines.append([line.rstrip()[0:2],line.rstrip()[2:5],line.rstrip()[5:7],line.rstrip()[7:10]])
-#    print(lines[31][0])
-#            print("")
-#    for pos in range(33):
-#            draw.line((0, 1, 3 , 4), fill=128)
-#                draw.line((int(lines[pos][0]), int(lines[pos][1]), int(lines[pos][2]), int(lines[pos][3])), fill=128)
-#            draw.line((int(lines[pos][1]), int(lines[pos][0]), int(lines[pos][3]), int(lines[pos][2])), fill=128)
-#    bild.show()
-#    fp.close
-    
     return 0
 
 if __name__ == '__main__':
