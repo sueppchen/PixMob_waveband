@@ -10,7 +10,9 @@
  
  NO TX:
   Arduino nano / mini Pro ATmega328
-  GND, R, G, B, SCL, TX, VCC5
+  GND, R, G, B, SCL, SDA, TX, (VCC5)
+ 
+ //enable dual-Mode
 */
 // ------------ global ------------
   //#define TRANSMITTER
@@ -18,24 +20,27 @@
 
 // ------------ I/O ------------
   //#include <YetAnotherPcInt.h>                // for PCint
+  #define LED 13
+
   #ifdef TRANSMITTER                              // ATmega32u4 = micro Pro
+    #define CLI_SPEED 115200                                           //ATmega328 = nano, Mini Pro
     #define PINRED   0        //normalInt
     #define PINGREEN 1
     #define PINSDA   2
     #define PINSCL   3
     #define PINBLUE  8
-    #define RADIO_GD0 7                           // data output
+    #define TX 7                           // data output
     #define RADIO_GD2 6
-    #define LED 13
     #define START_DELAY    800                  // wait until hf is present ... us
-  #else                                           //ATmega328 = nano, Mini Pro
+  #else
+    #define CLI_SPEED 9600                                           //ATmega328 = nano, Mini Pro 8MHz --> save time 
     #define PINRED   2        
     #define PINGREEN 3
     #define PINBLUE  4
     #define PINSCL   5
     #define PINSDA   6
-    #define RADIO_GD0 7                           // data output
-    #define LED 13
+    #define TX 7                           // data output
+    
     #define START_DELAY    1                  // wait until hf is present ... us
   #endif
 
@@ -57,20 +62,21 @@
   #endif
 
 uint8_t index, indexAlt, repeatSet=1;
-bool crcTest, active, match, ledValue;
+bool crcTest, rxReady, match, ledValue;
 uint8_t testByte, repeat;
 uint8_t h, exec;
-bool sclin = 1, sclAlt=1 , sdain = 1, redin = 1,greenin = 1,bluein = 1;
+bool sclin = 1, sclAlt=1;// , pinB = 1;
 
 uint32_t superValue;
 
-uint8_t byteArray[3][9] = {
+uint8_t byteArray[4][9] = {
   // 0     1     2     3     4     5     6     7     8       
-// 0b1101010, 0b100001, 0b100001, 0b100001, 0b100001, 0b1000110, 0b1101100, 0b100001, 0b10010100
+  // 0b1101010, 0b100001, 0b100001, 0b100001, 0b100001, 0b1000110, 0b1101100, 0b100001, 0b10010100
   // 6a
   {0x1B, 0x00, 0x00, 0x00, 0x00, 0x08, 0x0F, 0x00, 0x15}, //1, black as background, active for 1 minute
   {0x37, 0x00, 0x00, 0x3f, 0x00, 0x38, 0x3E, 0x00, 0x20}, //2, red, smoooooooth fade
   {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, //3, test-string
+  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, //4, test-string2
   };
 
 // ------------------ TX ---------------------- tx related stuff
@@ -91,19 +97,19 @@ uint8_t byteArray[3][9] = {
       ELECHOUSE_cc1101.Init();                        // must be set to initialize the cc1101!
       Serial.println(" done");
       ELECHOUSE_cc1101.SetTx();
-      ELECHOUSE_cc1101.setGDO(RADIO_GD0,RADIO_GD2);   // set lib internal gdo pin (gdo0). Gdo2 not use for this example.
+      ELECHOUSE_cc1101.setGDO(TX,RADIO_GD2);   // set lib internal gdo pin (gdo0). Gdo2 not use for this example.
       ELECHOUSE_cc1101.setModulation(2);              // set modulation mode. 0 = 2-FSK, 1 = GFSK, 2 = ASK/OOK, 3 = 4-FSK, 4 = MSK.
       ELECHOUSE_cc1101.setCCMode(0);                  // set 1 config for internal FiFo mode. 0 for Assync external Mode
       ELECHOUSE_cc1101.setMHZ(TX_FREQ);                // Here you can set your basic frequency. The lib calculates the frequency automatically (default = 433.92).The cc1101 can: 300-348 MHZ, 387-464MHZ and 779-928MHZ. Read More info from datasheet.
       ELECHOUSE_cc1101.setChannel(0);                 // Set the Channelnumber from 0 to 255. Default is cahnnel 0.
       Serial.println("Tx ready");
-      pinMode(RADIO_GD0, OUTPUT);
+      pinMode(TX, OUTPUT);
     #else
       Serial.println("no TX");
     #endif
     }
   void transmitBit(bool txBit){                                     // transmit single bit
-    digitalWrite(RADIO_GD0,txBit);
+    digitalWrite(TX,txBit);
     delayMicroseconds(BIT_TIME);
     }
 
@@ -142,7 +148,7 @@ uint8_t byteArray[3][9] = {
     #ifdef TRANSMITTER
       ELECHOUSE_cc1101.SetRx() ;                                    // disable transmitter
     #endif
-    digitalWrite(RADIO_GD0,0);
+    digitalWrite(TX,0);
     }
 //
 // ------------------ CLI --------------------- command line interface
@@ -331,6 +337,7 @@ uint8_t byteArray[3][9] = {
         Serial.print("input crc2   (0-63)"); byteArray[2][8] = (uint8_t) readCliDez();
         Serial.print("\r\nsending string:\r\n");
         showBuffer(byteArray[2]);
+        exec = 'b';
         index=0x03;
         break;
       case 'c':  // transfer string and brute CRC
@@ -367,6 +374,20 @@ uint8_t byteArray[3][9] = {
       case '+':  // show value-table
         showLineCode();
         break;
+      case 'q':  // custom transfer plain string
+        Serial.print("0 "); byteArray[2][0] = (uint8_t) readCliDez();
+        Serial.print("1 "); byteArray[2][1] = (uint8_t) readCliDez();
+        Serial.print("2 "); byteArray[2][2] = (uint8_t) readCliDez();
+        Serial.print("3 "); byteArray[2][3] = (uint8_t) readCliDez();
+        Serial.print("4 "); byteArray[2][4] = (uint8_t) readCliDez();
+        Serial.print("5 "); byteArray[2][5] = (uint8_t) readCliDez();
+        Serial.print("6 "); byteArray[2][6] = (uint8_t) readCliDez();
+        Serial.print("7 "); byteArray[2][7] = (uint8_t) readCliDez();
+        Serial.print("8 "); byteArray[2][8] = (uint8_t) readCliDez();
+        exec = 'q';
+        crcTest = true;
+        index=0x0;
+        break;
       case '?':  // help index
         Serial.println(SEPARATOR);
         Serial.println("|                   PixMob                 |");
@@ -382,6 +403,7 @@ uint8_t byteArray[3][9] = {
         Serial.println(" d - bruteforce single byte CRC");
         Serial.println(" e - bruteforce all colors");
         Serial.println(" + - print 6b8b table");
+        Serial.println(" q - response test - plain");
         Serial.println(" ? - this help");
         Serial.println(SEPARATOR);
         break;
@@ -389,7 +411,7 @@ uint8_t byteArray[3][9] = {
         break;
       }
     if(byte(selection) > 0){
-      printPrompt();
+      //printPrompt();
 
       }
     }
@@ -397,18 +419,14 @@ uint8_t byteArray[3][9] = {
 // ------------------ SETUP ------------------- arduino setup
   void setup() {                                    //SETUP
     pinMode(LED, OUTPUT);
-    pinMode(RADIO_GD0, OUTPUT);
+    pinMode(TX, OUTPUT);
     pinMode(PINSCL, INPUT);
-    //PcInt::attachInterrupt(PINSCL, SCL_ISR, FALLING);
     pinMode(PINSDA, INPUT);
-    //attachInterrupt(digitalPinToInterrupt(PINSDA), SDA_ISR, FALLING);
-    pinMode(PINRED, INPUT);
-    //attachInterrupt(digitalPinToInterrupt(PINRED), RED_ISR, FALLING);
-    pinMode(PINGREEN, INPUT);
-    //attachInterrupt(digitalPinToInterrupt(PINGREEN), GREEN_ISR, FALLING);
-    pinMode(PINBLUE, INPUT);
-    //attachInterrupt(digitalPinToInterrupt(PINBLUE), BLUE_ISR, FALLING);
-    Serial.begin(9600);                     // debug
+    pinMode(PINRED, INPUT_PULLUP);
+    pinMode(PINGREEN, INPUT_PULLUP);
+    pinMode(PINBLUE, INPUT_PULLUP);
+
+    Serial.begin(CLI_SPEED);                     // debug
     delay(3000);
     initTX();
     Serial.println("done");
@@ -419,36 +437,27 @@ uint8_t byteArray[3][9] = {
 //
 // ------------------ SUBS --------------------
   void done(){
-    Serial.print("--- DONE ---");
-    index=0;
+    if(exec != 'q') Serial.print("--- DONE ---");
+    index=1;
     crcTest=false;
     }
-  void testPins(){
+  bool testPins(){
+    bool pin = 1;
     for(byte i=0;i<50;i++){
-      sdain &= digitalRead(PINSDA);
-      redin &= digitalRead(PINRED);
-      greenin &= digitalRead(PINGREEN);
-      bluein &= digitalRead(PINBLUE);
+      pin   &= digitalRead(PINSDA) & digitalRead(PINRED) & digitalRead(PINGREEN) & digitalRead(PINBLUE);
       }
+    return pin;
     }
-  void testScl(){
+  void getStatus(){
     sclin = digitalRead(PINSCL);
-      if(sclin and sclAlt){
-        delay(200);    //transmit new values
-        }
-      if(!sclin and sclAlt){
-        sendMessage(byteArray[0]);                    //transmit wakeup
-        }
-      if(!sclin and !sclAlt){
-        active=true;    //transmit new values
-        }
-      if(sclin and !sclAlt){
-        active=false;    //transmit new values
-        }
-      sclAlt=sclin;
-
+      if( sclin and  sclAlt) rxReady = false;                    // H = sleeping
+      if(!sclin and  sclAlt) stayAlive();                        // H -> L = wake up: transmit stay alive
+      if(!sclin and !sclAlt) rxReady = true;                     // L = active
+      if( sclin and !sclAlt) rxReady = false;                    // L -> H = gone sleeping
+      sclAlt = sclin;
     }
-  void wakeUp(){
+
+  void stayAlive(){
     delay(40);
     sendMessage(byteArray[0]);                    //transmit wakeup
     }
@@ -523,7 +532,7 @@ uint8_t byteArray[3][9] = {
 
     if((debug) & ((superValue % 0x8) == 0)) Serial.println();
     if((superValue % 0x80) == 0){
-      wakeUp();
+      stayAlive();
       if((!silent) & (!debug)){
         h = (superValue >> 6) & 0x3f;
         Serial.print(",");
@@ -543,9 +552,9 @@ void loop() {
   else if (crcTest){
     
     //wait for receiver to be ready - SCL goes low
-    testScl();    
-
-    if(active){
+    getStatus();    
+        
+    if(rxReady){
       if(debug & (repeat==0)){
         //Serial.print(char(exec));
         Serial.print(", ");
@@ -553,29 +562,22 @@ void loop() {
       
       sendMessage(byteArray[2]);       //transmit new values
       //poll pins
-      testPins();
-      //did something happen?
-      if(sdain == 0){
-        if(!silent) Serial.print("\r\nsda: T=");
-        sdain=1;
-        match = 1;
-        }
-      else if(redin == 0){
-        if(!silent) Serial.print("\r\nred: T=");
-        redin=1;
-        match = 1;
-        }
-      else if(greenin == 0){
-        if(!silent) Serial.print("\r\ngreen: T=");
-        greenin=1;
-        match=1;
-        }
-      else if(bluein == 0){
-        if(!silent) Serial.print("\r\nblue: T=");
-        bluein=1;
-        match=1;
-        }
-      else {                               //no match, try next crc
+       //poll: did something happen?
+        if (testPins() == 0){                                       // match
+          if(!silent){
+            Serial.print(byteArray[2][testByte],HEX);
+            Serial.print(" C=");
+            Serial.print(byteArray[2][0],HEX);
+            Serial.print(byteArray[2][8],HEX);
+            Serial.print("\r\nfound\r\n");
+            }
+          if(exec != 'q') showBuffer(byteArray[2]);
+          else Serial.println("!!");
+          done();                                                   // back to idle1
+          stayAlive();                                              // transmit stay Alive
+          delay(500);
+          } 
+        else if(exec != 'q'){
         if(repeat < repeatSet) repeat++;
         //if(false) repeat++;
         else{
@@ -583,26 +585,7 @@ void loop() {
           //go ahead!
           next(0);
           }
-        }  
-
-      if(match){
-        if(!silent){
-          Serial.print(byteArray[2][testByte],HEX);
-          Serial.print(" C=");
-          Serial.print(byteArray[2][0],HEX);
-          Serial.print(byteArray[2][8],HEX);
-          Serial.print("\r\nfound\r\n");
-          }
-        showBuffer(byteArray[2]);
-        
-        next(1);
-        
-        sendMessage(byteArray[0]);                    //transmit wakeup
-        delay(5000);
-        match=0;
-        sdain=1;redin=1;greenin=1;bluein=1;
-        } 
-      
+        }                                                            // no match, try next crc      
       }
     }
   digitalWrite(LED,ledValue);
