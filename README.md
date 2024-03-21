@@ -109,13 +109,20 @@ I started a little bruteforce-session ... the results are in the folder colorBru
    - i have to stitch the files per hand
    - I will automate this a bit... next time
 
-DUAL FRONTEND:
+MULTI FRONTEND:
  + this is made for automatic bruteforcing with more clients. the idea is that one pi zero can handle all traffic and store all forced data.
- + flow: 
+ + flow:
+   - pi requests all serial interfaces with magiccharacter to get the number of connected endpoints  
    - pi sends color-data to the free enpoint
    - the endpoint forces the crc
    - color and crc are reported back to pi
    - pi stores the values in a file and marks the endpoint as idle again
    - repeat
- + each arduino can handle 2 endpoints.
+ + each arduino can handle 2 endpoints without additional hardware or 8 endpoints with mcp23017 port extender
+
+readList.py:
++ process the brute force data in colorBrute folder
++ verify the values
+  - all my values seem to be +1 in CRC
+  - there are no CRC values with ( even crcA and a crcB = 0x05)  and ( odd crcA and crcB = 0x3f) 
 
