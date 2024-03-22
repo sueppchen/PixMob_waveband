@@ -12,19 +12,16 @@
   Arduino nano / mini Pro ATmega328
   GND, R, G, B, SCL, SDA, TX, (VCC5)
  
- //enable dual-Mode
 */
 // ------------ global ------------
   //#define TRANSMITTER
 
 
 // ------------ I/O ------------
-  //#include <YetAnotherPcInt.h>                // for PCint
-  #define LED 13
 
   #ifdef TRANSMITTER                              // ATmega32u4 = micro Pro
     #define CLI_SPEED 115200                                           //ATmega328 = nano, Mini Pro
-    #define PINRED   0        //normalInt
+    #define PINRED   0                            //normalInt
     #define PINGREEN 1
     #define PINSDA   2
     #define PINSCL   3
@@ -41,6 +38,7 @@
     #define PINSDA   6
     #define TX 7                           // data output
     
+    #define LED 13
     #define START_DELAY    1                  // wait until hf is present ... us
   #endif
 
@@ -59,6 +57,8 @@
   #ifdef TRANSMITTER
     #include <ELECHOUSE_CC1101_SRC_DRV.h>       // for radio module
     #define TX_FREQ     868.49                  // transmit frequency
+  #else
+    uint8_t getPortD;
   #endif
 
 uint8_t index, indexAlt, repeatSet=1;
@@ -132,7 +132,7 @@ uint8_t byteArray[4][9] = {
     return 0xff;
     }
   void sendMessage(uint8_t* buffer){                                // transmit one frame
-    #ifdef TRANSMITER
+    #ifdef TRANSMITTER
       ELECHOUSE_cc1101.SetTx();                                     //enable transmitter
     #endif
     delayMicroseconds(START_DELAY);                                 //wait until hf is present
@@ -326,15 +326,15 @@ uint8_t byteArray[4][9] = {
       case 'b':  // custom transfer plain string
         Serial.println(" send data with known crc");
         showLineCode();
-        Serial.print("input crc1   (0-63)"); byteArray[2][0] = (uint8_t) readCliDez();
+        Serial.print("input crc1   (0-3f)"); byteArray[2][0] = (uint8_t) readCliHex();
         Serial.print("input mode   (0-3f)"); byteArray[2][1] = (uint8_t) readCliHex();
-        Serial.print("input green  (0-63)"); byteArray[2][2] = (uint8_t) readCliDez();
-        Serial.print("input red    (0-63)"); byteArray[2][3] = (uint8_t) readCliDez();
-        Serial.print("input blue   (0-63)"); byteArray[2][4] = (uint8_t) readCliDez();
+        Serial.print("input green  (0-3f)"); byteArray[2][2] = (uint8_t) readCliHex();
+        Serial.print("input red    (0-3f)"); byteArray[2][3] = (uint8_t) readCliHex();
+        Serial.print("input blue   (0-3f)"); byteArray[2][4] = (uint8_t) readCliHex();
         Serial.print("input rise   (0-3f)"); byteArray[2][5] = (uint8_t) readCliHex();
         Serial.print("input fall   (0-3f)"); byteArray[2][6] = (uint8_t) readCliHex();
         Serial.print("input group  (0-3f)"); byteArray[2][7] = (uint8_t) readCliHex();
-        Serial.print("input crc2   (0-63)"); byteArray[2][8] = (uint8_t) readCliDez();
+        Serial.print("input crc2   (0-3f)"); byteArray[2][8] = (uint8_t) readCliHex();
         Serial.print("\r\nsending string:\r\n");
         showBuffer(byteArray[2]);
         exec = 'b';
@@ -411,20 +411,34 @@ uint8_t byteArray[4][9] = {
         break;
       }
     if(byte(selection) > 0){
+      getPortD = 0;
       //printPrompt();
 
       }
     }
 //
 // ------------------ SETUP ------------------- arduino setup
+  #ifndef TRANSMITTER
+    ISR (PCINT2_vect){                                  // PCINT2_vect: interrupt vector for PORTD
+    getPortD = PIND;
+    //event = true;
+    }
+  #endif
+
   void setup() {                                    //SETUP
-    pinMode(LED, OUTPUT);
+    #ifndef TRANSMITTER
+      pinMode(LED, OUTPUT);
+      PCICR  = (1<<PCIE2);    // enable PCINT[23:16] interrupts
+      PCMSK2 = (1<<PCINT18) | (1<<PCINT19) | (1<<PCINT20) | (1<<PCINT22) ; // unmask PCINT 18-20,22
+    #endif
+
     pinMode(TX, OUTPUT);
     pinMode(PINSCL, INPUT);
     pinMode(PINSDA, INPUT);
-    pinMode(PINRED, INPUT_PULLUP);
-    pinMode(PINGREEN, INPUT_PULLUP);
-    pinMode(PINBLUE, INPUT_PULLUP);
+    pinMode(PINRED, INPUT);
+    pinMode(PINGREEN, INPUT);
+    pinMode(PINBLUE, INPUT);
+
 
     Serial.begin(CLI_SPEED);                     // debug
     delay(3000);
@@ -443,9 +457,17 @@ uint8_t byteArray[4][9] = {
     }
   bool testPins(){
     bool pin = 1;
-    for(byte i=0;i<50;i++){
-      pin   &= digitalRead(PINSDA) & digitalRead(PINRED) & digitalRead(PINGREEN) & digitalRead(PINBLUE);
-      }
+    #ifdef TRANSMITTER
+      for(byte i=0;i<50;i++){
+        pin   &= digitalRead(PINSDA) & digitalRead(PINRED) & digitalRead(PINGREEN) & digitalRead(PINBLUE);
+        }
+    #else
+      if(getPortD){
+        pin = bool(0b01011100 - (getPortD & 0b01011100));
+        ledValue = 1-ledValue; 
+        }
+      getPortD = 0;
+    #endif
     return pin;
     }
   void getStatus(){
@@ -588,7 +610,10 @@ void loop() {
         }                                                            // no match, try next crc      
       }
     }
-  digitalWrite(LED,ledValue);
+  
+  #ifndef TRANSMITTER
+    digitalWrite(LED,ledValue);
+  #endif
   delay(40);
   indexAlt=index;
   }
