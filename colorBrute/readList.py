@@ -100,7 +100,7 @@ def main(args):
     def readFiles():
         
         for blueNumber in range(blueStart , blueEnd+1):
-            with io.open("colorBrute/blue_"+str("%02x" % blueNumber)+".txt", 'r') as datei:
+            with io.open("blue_"+str("%02x" % blueNumber)+".txt", 'r') as datei:
                 lineNumber = 0
                 for line in datei:
                     if(line.rstrip()[34:60] != ''):
@@ -181,7 +181,7 @@ def main(args):
 #    for outfile in range(0,2):
         proofList=[]
         proofData(outfile)
-        with io.open("colorBrute/proof_%02d.txt" % outfile, 'w') as datei:
+        with io.open("proof_%02d.txt" % outfile, 'w') as datei:
             for counter in range(0,len(proofList)):
                 line = proofList[counter]
                 datei.write("%01x " % int(line[0]) +
