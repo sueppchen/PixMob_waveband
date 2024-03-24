@@ -13,5 +13,5 @@ structure in all files:
 - invalid: when crc could not be calculated (or the LED does not lite up)
   
 structure in folder
-- filenames are blue_[number].txt
+- filenames are blue_[number].list
 - every file contains 32768 lines
