@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#  crc_calculate.py
+#  crc_variants.py
 #  
 #  Copyright 2024 sueppchen <sueppchen@DNS>
 #  
@@ -22,17 +22,9 @@
 #  
 #  
 
+import numpy as np
 
-def main(args):
-    myDict = {0x21: 0, 0x35: 1, 0x2c: 2, 0x34: 3, 0x66: 4, 0x26: 5, 0xAC: 6, 0x24: 7,     #
-              0x46: 8, 0x56: 9, 0x44:10, 0x54:11, 0x64:12, 0x6d:13, 0x4c:14, 0x6c:15,     #
-              0x92:16, 0xb2:17, 0xA6:18, 0xA2:19, 0xB4:20, 0x94:21, 0x86:22, 0x96:23,     #
-              0x42:24, 0x62:25, 0x2a:26, 0x6a:27, 0xb6:28, 0x36:29, 0x22:30, 0x32:31,     #// 18-1f
-              0x31:32, 0xB1:33, 0x95:34, 0xB5:35, 0x91:36, 0x99:37, 0x85:38, 0x89:39,     #// 20-27 
-              0xa5:40, 0xa4:41, 0x8c:42, 0x84:43, 0xa1:44, 0xa9:45, 0x8d:46, 0xad:47,     #// 28-2f
-              0x9a:48, 0x8a:49, 0x5a:50, 0x4a:51, 0x49:52, 0x59:53, 0x52:54, 0x51:55,     #// 30-37
-              0x25:56, 0x2d:57, 0x69:58, 0x29:59, 0x4D:60, 0x45:61, 0x61:62, 0x65:63 }    #// 38-3f
-    
+def main(args):    
     reDictBE = [0x21, 0x35, 0x2c, 0x34, 0x66, 0x26, 0xac, 0x24,   # // 00-07
                 0x46, 0x56, 0x44, 0x54, 0x64, 0x6d, 0x4c, 0x6c,    # // 08-0f
                 0x92, 0xb2, 0xa6, 0xa2, 0xb4, 0x94, 0x86, 0x96,    # // 10-17
@@ -51,57 +43,56 @@ def main(args):
                 0x59, 0x51, 0x5a, 0x52, 0x92, 0x9a, 0x4a, 0x8a,    #
                 0xa4, 0xb4, 0x96, 0x94, 0xb2, 0xa2, 0x86, 0xa6]    #
 
-   
+    newList=   [[True, 47, 0, 59, 15, 0, 8, 18, 0, 49],
+                [True, 47, 0, 41, 23, 0, 8, 18, 0, 49],
+                [True, 47, 0, 27, 35, 0, 8, 18, 0, 49],
+                [True, 47, 0, 46, 41, 0, 8, 18, 0, 49],
+                [True, 47, 0, 2, 37, 1, 8, 18, 0, 49],
+                [True, 47, 0, 50, 0, 2, 8, 18, 0, 49],
+                [True, 47, 0, 6, 46, 2, 8, 18, 0, 49],
+                [True, 47, 0, 29, 15, 3, 8, 18, 0, 49],
+                [True, 47, 0, 16, 41, 3, 8, 18, 0, 49],
+                [True, 47, 0, 54, 18, 4, 8, 18, 0, 49],
+                [True, 47, 0, 27, 59, 4, 8, 18, 0, 49],
+                [True, 47, 0, 18, 45, 5, 8, 18, 0, 49],
+                [True, 47, 0, 10, 16, 6, 8, 18, 0, 49],
+                [True, 47, 0, 49, 33, 6, 8, 18, 0, 49],
+                [True, 47, 0, 8, 34, 7, 8, 18, 0, 49],
+                [True, 47, 0, 44, 43, 7, 8, 18, 0, 49],
+                [True, 47, 0, 13, 57, 9, 8, 18, 0, 49],
+                [True, 47, 0, 10, 29, 12, 8, 18, 0, 49],
+                [True, 47, 0, 17, 48, 12, 8, 18, 0, 49],
+                [True, 47, 0, 40, 4, 13, 8, 18, 0, 49],
+                [True, 47, 0, 42, 11, 13, 8, 18, 0, 49],
+                [True, 47, 0, 15, 18, 14, 8, 18, 0, 49],
+                [True, 47, 0, 61, 21, 14, 8, 18, 0, 49],
+                [True, 47, 0, 19, 38, 14, 8, 18, 0, 49],
+                [True, 47, 0, 11, 59, 14, 8, 18, 0, 49],
+                [True, 47, 0, 23, 44, 15, 8, 18, 0, 49],
+                [True, 47, 0, 31, 58, 15, 8, 18, 0, 49]]
 
-    doublelist =[
-                [[0x00, 0x00, 0x2f, 0x2a, 0x2f, 0x10, 0x13, 0x00, 0x25], [0x00, 0x00, 0x0E, 0x00, 0x0A, 0x08, 0x12, 0x00, 0x25]],
-                [[0x01, 0x00, 0x3e, 0x00, 0x00, 0x10, 0x13, 0x00, 0x0c], [0x01, 0x00, 0x10, 0x00, 0x21, 0x08, 0x12, 0x00, 0x0C]],
-                [[0x01, 0x00, 0x2f, 0x0d, 0x2f, 0x10, 0x13, 0x00, 0x24], [0x01, 0x00, 0x08, 0x00, 0x00, 0x10, 0x13, 0x00, 0x24]],
-                [[0x02, 0x00, 0x2f, 0x0b, 0x2f, 0x10, 0x13, 0x00, 0x2d], [0x02, 0x00, 0x2f, 0x2f, 0x2f, 0x11, 0x25, 0x00, 0x2d]],
-                [[0x0a, 0x00, 0x00, 0x00, 0x24, 0x10, 0x13, 0x00, 0x37], [0x0A, 0x00, 0x34, 0x00, 0x0A, 0x08, 0x12, 0x00, 0x37]],
-                [[0x0b, 0x00, 0x2f, 0x2d, 0x2f, 0x10, 0x13, 0x00, 0x10], [0x0b, 0x00, 0x2f, 0x2f, 0x2f, 0x11, 0x0e, 0x00, 0x10]],
-                [[0x19, 0x00, 0x00, 0x3f, 0x00, 0x10, 0x13, 0x00, 0x32], [0x19, 0x00, 0x10, 0x00, 0x09, 0x08, 0x12, 0x00, 0x32]],
-                [[0x1b, 0x00, 0x00, 0x15, 0x00, 0x10, 0x13, 0x00, 0x3b], [0x1b, 0x00, 0x00, 0x00, 0x0b, 0x10, 0x13, 0x00, 0x3b]],
-                [[0x23, 0x00, 0x2E, 0x00, 0x0A, 0x08, 0x12, 0x00, 0x1F], [0x23, 0x00, 0x10, 0x00, 0x37, 0x08, 0x12, 0x00, 0x1F]],
-                [[0x28, 0x00, 0x00, 0x0b, 0x00, 0x10, 0x13, 0x00, 0x1c], [0x28, 0x00, 0x15, 0x00, 0x00, 0x10, 0x13, 0x00, 0x1c]],
-                [[0x2a, 0x00, 0x2f, 0x2f, 0x2f, 0x32, 0x11, 0x00, 0x2e], [0x2A, 0x00, 0x10, 0x00, 0x27, 0x08, 0x12, 0x00, 0x2E]],
-                [[0x2c, 0x00, 0x00, 0x06, 0x00, 0x10, 0x13, 0x00, 0x3a], [0x2c, 0x00, 0x2f, 0x2f, 0x2f, 0x12, 0x11, 0x00, 0x3a]],
-                [[0x32, 0x00, 0x2f, 0x2f, 0x2f, 0x00, 0x35, 0x00, 0x14], [0x32, 0x00, 0x10, 0x00, 0x12, 0x08, 0x12, 0x00, 0x14]],
-                [[0x32, 0x00, 0x38, 0x00, 0x00, 0x10, 0x13, 0x00, 0x3f], [0x32, 0x00, 0x2f, 0x2f, 0x2f, 0x00, 0x39, 0x00, 0x3f]],
-                [[0x39, 0x00, 0x00, 0x00, 0x14, 0x10, 0x13, 0x00, 0x2e], [0x39, 0x00, 0x1A, 0x00, 0x0A, 0x08, 0x12, 0x00, 0x2E]],
-                [[0x39, 0x00, 0x25, 0x00, 0x00, 0x10, 0x13, 0x00, 0x35], [0x39, 0x00, 0x10, 0x00, 0x23, 0x08, 0x12, 0x00, 0x35]],
-                [[0x02, 0x00, 0x2f, 0x2f, 0x2f, 0x11, 0x23, 0x00, 0x34], [0x02, 0x00, 0x10, 0x33, 0x10, 0x10, 0x0A, 0x00, 0x34]],
-                [[0x06, 0x00, 0x2f, 0x2f, 0x2f, 0x19, 0x11, 0x00, 0x2b], [0x06, 0x00, 0x10, 0x0D, 0x10, 0x10, 0x0A, 0x00, 0x2B]],
-                [[0x07, 0x00, 0x2f, 0x2f, 0x2f, 0x11, 0x2e, 0x00, 0x2b], [0x07, 0x00, 0x10, 0x28, 0x10, 0x10, 0x0A, 0x00, 0x2B]],
-                [[0x08, 0x00, 0x10, 0x37, 0x10, 0x10, 0x0A, 0x00, 0x07], [0x08, 0x00, 0x04, 0x20, 0x10, 0x08, 0x12, 0x00, 0x07]],
-                [[0x2f, 0x00, 0x00, 0x33, 0x00, 0x10, 0x13, 0x00, 0x0a], [0x2F, 0x00, 0x01, 0x20, 0x10, 0x08, 0x12, 0x00, 0x0A]],
-                [[0x39, 0x00, 0x2f, 0x2f, 0x2f, 0x00, 0x33, 0x00, 0x2b], [0x39, 0x00, 0x10, 0x1F, 0x10, 0x10, 0x0A, 0x00, 0x2B]],
-                [[0x3B, 0x00, 0x10, 0x00, 0x2B, 0x08, 0x12, 0x00, 0x26], [0x3B, 0x00, 0x03, 0x20, 0x10, 0x08, 0x12, 0x00, 0x26]],
-                [[0x3d, 0x00, 0x20, 0x00, 0x00, 0x10, 0x13, 0x00, 0x30], [0x3D, 0x00, 0x10, 0x21, 0x10, 0x10, 0x0A, 0x00, 0x30]],
-                [[0x3f, 0x00, 0x2f, 0x2f, 0x2f, 0x02, 0x11, 0x00, 0x11], [0x3F, 0x00, 0x12, 0x20, 0x10, 0x08, 0x12, 0x00, 0x11]],
-                ]  #
-
-
+    bits = 16
     
+    SHIFT=0b01011001   #shift 8 to 6, (6+5 transform Input), short | reflectOUT, reflectIN, (1+0 transform output)
+
 
     polyZoo12 = [0x61e, 0x987, 0xa33, 0x829, 0xddf, 0xbdf, 0x83e, 0xb75,
                  0x8f3, 0xf89, 0x817, 0xc07, 0xbff, 0xb41, 0xb91, 0xe98,
                  0xc05, 0x993, 0xa6f, 0xc06, 0xbae, 0x8f8, 0xa4f]
 
-     
-    def printByte(helper):
-        print("0b", end="")
-        bit7= (helper>>7) & 0x01
-        bit6= (helper>>6) & 0x01
-        bit5= (helper>>5) & 0x01
-        bit4= (helper>>4) & 0x01
-        bit3= (helper>>3) & 0x01
-        bit2= (helper>>2) & 0x01
-        bit1= (helper>>1) & 0x01
-        bit0= (helper>>0) & 0x01
-        print(str(bit5)+str(bit4)+str(bit3)+str(bit2)+str(bit1)+str(bit0), end="")
+    polyZoo16 = [0x8d95, 0xfdbf, 0x8016, 0xc7ab, 0x979e, 0x9627, 0xe433, 0xc5db, 
+                0xac6f, 0xb82d, 0x88f9, 0x86f2, 0x978a, 0xd175, 0x8fdb, 0xed2f, 
+                0xc4bd, 0xb57d, 0xefff, 0xa001, 0x8003, 0x8810, 0x9747, 0xd04b, 
+                0x808d, 0x935a, 0xa10e, 0x968b, 0xbaad, 0xd3e9, 0xd015, 0x8ee7, 
+                0xcbab, 0xf94f, 0xac9a, 0xb7b1, 0xa755, 0xadc9, 0x82c4, 0x9eb2, 
+                0xc86c, 0xe92f]
+#    polyZoo16 = [0x8d95] 
 
-    import numpy as np
+    startValue = [0, 0x1d0f, 0xffff]
+ #   startValue = [0]
+
+    xorList = [0, 1, 0xaaaa, 0xffff]
+#    xorList = [0]
 
     def reflect_data(x, width):
         # See: https://stackoverflow.com/a/20918545
@@ -158,125 +149,89 @@ def main(args):
         return crc ^ xor_out
     
 #    lastCrc = 0
-    bits = 16
-    
-    SHIFT=0b01011001   #shift 8 to 6, (6+5 transform Input), short | reflectOUT, reflectIN, (1+0 transform output)
-
     match = 0
     hexstring=''
     
     shifting=8
     
-    helper0=0
-    daten0=0
-    crc0=0
+    helper=0
+    daten=0
+    crc=0
 
-    helper1=0
-    daten1=0
-    crc1=0
-    crc16Zoo = [0x8d95, 0xfdbf, 0x8016, 0xc7ab, 0x979e, 0x9627, 0xe433, 0xc5db, 
-                0xac6f, 0xb82d, 0x88f9, 0x86f2, 0x978a, 0xd175, 0x8fdb, 0xed2f, 
-                0xc4bd, 0xb57d, 0xefff, 0xa001, 0x8003, 0x8810, 0x9747, 0xd04b, 
-                0x808d, 0x935a, 0xa10e, 0x968b, 0xbaad, 0xd3e9, 0xd015, 0x8ee7, 
-                0xcbab, 0xf94f, 0xac9a, 0xb7b1, 0xa755, 0xadc9, 0x82c4, 0x9eb2, 
-                0xc86c, 0xe92f]
-    startValue = [0, 0x1d0f, 0xffff]
-    xorList = [0, 1, 0xaaaa, 0xffff]
     
     
     for SHIFT in range(0,0x80):
+#    for SHIFT in range(0x10,0x11):
         for outFx in xorList:
             for init in startValue:
-                for key in crc16Zoo:
-                    match = 0
-                    for touple in doublelist:
+                for key in polyZoo16:
+                    
+                    crcCalc=[]
+                    
+                    for entry in newList:
                         # hex originals
-
-                        touple[0][0] = 0
-                        touple[0][8] = 0
-                        helper0=0
-                        for value0 in touple[0]:
+                        #print(entry)
+                        
+                        entry[1] = 0
+                        entry[9] = 0
+                        helper=0
+                        for value in entry[2:]:
                             if(((SHIFT >> 5) & 0x3) == 1):
-                                value0  = value0 << 2
+                                value  = value << 2
                             if(((SHIFT >> 5) & 0x3) == 2):
-                                value0 = reDictBE[value0]
+                                value = reDictBE[value]
                             if(((SHIFT >> 5) & 0x3) == 3):
-                                value0 = reDictLE[value0]
-                            helper0  = helper0 << shifting
-                            helper0 += value0
+                                value = reDictLE[value]
+                            helper  = helper << shifting
+                            helper += value
                         
                         #print(": %012x " % helper0, end="\r\n")
                         
-                        hexstring= str(hex(helper0)[2:])
+                        hexstring= str(hex(helper)[2:])
                         if(len(hexstring) % 2 == 1):
-                          hexstring = '0' + hexstring
-                        daten0 = bytearray.fromhex(hexstring)
+                          hexstring = '00000' + hexstring
+                        else:
+                          hexstring = '0000' + hexstring
+                        #print (hexstring)
                         
-                        touple[1][0] = 0
-                        touple[1][8] = 0
-                        helper1=0
-                        for value1 in touple[1]:
-                            #print("%02x " % value, end="")
-                            if(((SHIFT >> 5) & 0x3) == 1):
-                                value1  = value1 << 2
-                            if(((SHIFT >> 5) & 0x3) == 2):
-                                value1 = reDictBE[value1]
-                            if(((SHIFT >> 5) & 0x3) == 3):
-                                value1 = reDictLE[value1]
-                            helper1  = helper1 << shifting
-                            helper1 += value1
-                        #print(": %012x " % helper1, end="\r\n")
-                        hexstring= str(hex(helper1)[2:])
-                        if(len(hexstring) % 2 == 1):
-                          hexstring = '0' + hexstring
-                        daten1 = bytearray.fromhex(hexstring)
-                
+                        daten = bytearray.fromhex(hexstring)
+                        #print (daten)
+                                        
                         if(SHIFT & 0x10):                              #short
-                            daten0 = daten0[1:][:7]       
-                            daten1 = daten1[1:][:7]       
+                            daten = daten[1:][:7]       
+                        #print (daten)
 
-                        crc0 = crc_poly(daten0, bits, key, crc=init, ref_in=(SHIFT & 0x4), ref_out=(SHIFT & 0x8), xor_out=outFx)
-                        crc1 = crc_poly(daten1, bits, key, crc=init, ref_in=(SHIFT & 0x4), ref_out=(SHIFT & 0x8), xor_out=outFx)
+                        crc = crc_poly(daten, bits, key, crc=init, ref_in=(SHIFT & 0x4), ref_out=(SHIFT & 0x8), xor_out=outFx)
                         
                         if(bits>12 and ((SHIFT & 0x3) == 0)):
-                            crc0=crc0>>(bits-12)
-                            crc1=crc1>>(bits-12)
+                            crc=crc>>(bits-12)
                             
                         if(bits>12 and ((SHIFT & 0x3) == 1)):
-                            helperH = ((crc0 >> 10) & 0x3F) 
-                            helperL = ((crc0 >> 2) & 0x3F)
-                            crc0 =  (helperH << 6) + helperL
-                            helperH = ((crc1 >> 10) & 0x3F) 
-                            helperL = ((crc1 >> 2) & 0x3F)
-                            crc1 =  (helperH << 6) + helperL
+                            helperH = ((crc >> 10) & 0x3F) 
+                            helperL = ((crc >> 2) & 0x3F)
+                            crc =  (helperH << 6) + helperL
 
                         if(bits>12 and ((SHIFT & 0x3) == 2)):
-                            crc0 &= 0xfff
-                            crc1 &= 0xfff
+                            crc &= 0xfff
 
                         if(bits>12 and ((SHIFT & 0x3) == 3)):
-                            helperH = ((crc0 >> 8) & 0x3F) 
-                            helperL = (crc0 & 0x3F)
-                            crc0 =  (helperH << 6) + helperL
-                            helperH = ((crc1 >> 8) & 0x3F) 
-                            helperL = (crc1 & 0x3F)
-                            crc1 =  (helperH << 6) + helperL
-                                        
-                        #print("%03x "  % crc0, end="")
-                        #print("%03x "  % crc1, end="")
-                        #print("%03x "  % crc2, end="")
-                        #print("%03x "  % crc3, end="\r\n")
+                            helperH = ((crc >> 8) & 0x3F) 
+                            helperL = (crc & 0x3F)
+                            crc =  (helperH << 6) + helperL
                         
-                        if((crc0 == crc1) and (crc0 != 0)):
-                            match += 1
-                            if(match > 5):
-                                print("Shift: %03x " % SHIFT, end="")
-                                print("FX: %03x " % outFx, end="")
-                                print("Init: %03x " % init, end="")
-                                print("key: %03x " % key, end="")
-                                #print("%03x "  % crc0, end="")
-                                print("match!", end="")
-                                print(" ")
+                        crcCalc.append(crc)
+                   # print(crcCalc)
+                    match = 1
+#                    for number in range(1,len(crcCalc)):
+                    for number in range(1,5):
+                        if (crcCalc[number] != crcCalc[number-1]):
+                            match = 0
+                    
+                    if(match == 1):
+                        print("mean =  " +str(crcCalc))
+                        print(daten)
+                        print("S= %x " % SHIFT + " FX=%x" % outFx + " INIT = %x" %init + " KEY= %x" %key )
+                     
 
 
     return 0
