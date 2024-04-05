@@ -89,7 +89,7 @@ def main(args):
 #    polyZoo16 = [0x8d95] 
 
     startValue = [0, 0x1d0f, 0xffff]
- #   startValue = [0]
+#    startValue = [0]
 
     xorList = [0, 1, 0xaaaa, 0xffff]
 #    xorList = [0]
@@ -152,7 +152,7 @@ def main(args):
     match = 0
     hexstring=''
     
-    shifting=8
+    shifting=6                     # 8 does nothing, set to 6 to remove bit six and seven from each byte and stitch all together
     
     helper=0
     daten=0
@@ -172,49 +172,67 @@ def main(args):
                         # hex originals
                         #print(entry)
                         
-                        entry[1] = 0
-                        entry[9] = 0
+                        entry[1] = 0                                #crcA = 0
+                        entry[9] = 0                                #crcB = 0
                         helper=0
-                        for value in entry[2:]:
-                            if(((SHIFT >> 5) & 0x3) == 1):
+                        for value in entry[2:]:                     # ignore valid/invalid and crcA
+                            if(((SHIFT >> 5) & 0x3) == 1):          # shift left 2
                                 value  = value << 2
-                            if(((SHIFT >> 5) & 0x3) == 2):
+                            if(((SHIFT >> 5) & 0x3) == 2):          # use 6b8b BE translation
                                 value = reDictBE[value]
-                            if(((SHIFT >> 5) & 0x3) == 3):
+                            if(((SHIFT >> 5) & 0x3) == 3):          # use 6b8b LE translation
                                 value = reDictLE[value]
-                            helper  = helper << shifting
+                            helper  = helper << shifting            # do 6bit or 8 bit processing
                             helper += value
                         
                         #print(": %012x " % helper0, end="\r\n")
                         
+                        if(SHIFT & 0x10):                           #short frame from 9 to 7 byte
+                            if(shifting==8):
+                                helper = helper >> 8                # = 56 bit
+                            else:
+                                helper = helper >> 6                # = 42 bit
+                                
                         hexstring= str(hex(helper)[2:])
-                        if(len(hexstring) % 2 == 1):
-                          hexstring = '00000' + hexstring
-                        else:
-                          hexstring = '0000' + hexstring
+                        
+                        if(SHIFT & 0x10):                           # short frame
+                            if(shifting == 8):                      #  - fill up to 56 bits / 14 hex digits
+                                while(len(hexstring) < 14):
+                                    hexstring = '0' + hexstring
+                            else:                                   #  - fill up to 42 bits / 12 hex digits
+                                while(len(hexstring) < 12):
+                                    hexstring = '0' + hexstring
+                        else:                                       # long frame
+                            if(shifting == 8):                      #  - fill up to 72 bits / 18 hex digits
+                                while(len(hexstring) < 18):
+                                    hexstring = '0' + hexstring
+                            else:                                   #  - fill up to 54 bits / 14 hex digits
+                                while(len(hexstring) < 14):
+                                    hexstring = '0' + hexstring
+                                                    
                         #print (hexstring)
                         
                         daten = bytearray.fromhex(hexstring)
                         #print (daten)
                                         
-                        if(SHIFT & 0x10):                              #short
-                            daten = daten[1:][:7]       
+#                        if(SHIFT & 0x10):                              #short frame to 7 byte
+#                            daten = daten[1:][:7]       
                         #print (daten)
 
                         crc = crc_poly(daten, bits, key, crc=init, ref_in=(SHIFT & 0x4), ref_out=(SHIFT & 0x8), xor_out=outFx)
                         
-                        if(bits>12 and ((SHIFT & 0x3) == 0)):
+                        if(bits>12 and ((SHIFT & 0x3) == 0)):    #shift until 2x6 bit remain
                             crc=crc>>(bits-12)
                             
-                        if(bits>12 and ((SHIFT & 0x3) == 1)):
+                        if(bits>12 and ((SHIFT & 0x3) == 1)):    # split into 2x8 bit and shift to 2x6 bit
                             helperH = ((crc >> 10) & 0x3F) 
                             helperL = ((crc >> 2) & 0x3F)
                             crc =  (helperH << 6) + helperL
 
-                        if(bits>12 and ((SHIFT & 0x3) == 2)):
+                        if(bits>12 and ((SHIFT & 0x3) == 2)):   #cut until 2x6 bit remain
                             crc &= 0xfff
 
-                        if(bits>12 and ((SHIFT & 0x3) == 3)):
+                        if(bits>12 and ((SHIFT & 0x3) == 3)):   # split to 2x8 bit and cut to 2x 6bit
                             helperH = ((crc >> 8) & 0x3F) 
                             helperL = (crc & 0x3F)
                             crc =  (helperH << 6) + helperL
