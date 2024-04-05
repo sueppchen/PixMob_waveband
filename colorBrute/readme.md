@@ -1,4 +1,4 @@
-structure in all files:
+structure in all *.list files:
 - "V xx 00 gg rr bb 08 12 00 yy
   + V  = 1 (valid) / 0 (invalid) 
   + xx = CRC1 value
@@ -15,3 +15,11 @@ structure in all files:
 structure in folder
 - filenames are blue_[number].list
 - every file contains 32768 lines
+
+
+crc_variants.py:
++ this script is able to calculate crc-checksums vith variable parameters
+
+readlist.py:
++ read the list-file and do ... what ever you want
+
