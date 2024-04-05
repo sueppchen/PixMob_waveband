@@ -20,6 +20,6 @@ structure in folder
 crc_variants.py:
 + this script is able to calculate crc-checksums vith variable parameters
 
-readlist.py:
-+ read the list-file and do ... what ever you want
+processData.py:
++ read the *.list file and do ... what ever you want... sort it, pick special combinations, find e structure 
 
