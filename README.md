@@ -63,6 +63,10 @@ the object:
       * hold    6:2..0 (0-7) = 0ms, 30ms, 100ms, 200ms, 500ms, 1000ms, 2500ms, infinite
     - Background timeout range is from about 0.5 second to about 60 seconds according to the HOLD value (from 0 to 7) in the message setting the background color.  
 
+![timing1](https://github.com/sueppchen/PixMob_waveband/assets/58486836/7edfed66-dd12-40f3-a30b-8f9e245992b8)
+
+![timing2](https://github.com/sueppchen/PixMob_waveband/assets/58486836/72125370-ecef-4c2f-8bf7-4f00ef518a4f)
+
 what we need to get it running:
   hardware: arduino Pro micro(atMega32u4), levelshifter, TI CC1101, (soic08 clamp)
   
