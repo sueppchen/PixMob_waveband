@@ -47,6 +47,7 @@
   #define SEPARATOR    "+-------------------------------------------+"
   #define TABLE_HEADER "| PixMob CL-interface: type ? for help      |"
   #define PROMPT "> "
+
   bool silent, debug;
 
 // ------------ TX ----------
@@ -91,13 +92,13 @@ uint8_t byteArray[4][9] = {
   // cannot be used to calculate a valid CRC
   #define _NONE_ 0xFFFF
   uint16_t table[7][64] = {
-    { 0x0000, _NONE_, 0x3D30, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_,  // MODE 00 - 07
+    { 0x0000, _NONE_, 0x3D30, _NONE_, 0x1e2d, _NONE_, _NONE_, _NONE_,  // MODE 00 - 07
       _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_,  // MODE 08 - 0F
-      _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_,  // MODE 00 - 17
+      _NONE_, _NONE_, _NONE_, _NONE_, 0x222d, _NONE_, _NONE_, _NONE_,  // MODE 00 - 17
       _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_,  // MODE 08 - 1F
-      _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_,  // MODE 00 - 27
+      _NONE_, _NONE_, _NONE_, _NONE_, 0x2000, _NONE_, _NONE_, _NONE_,  // MODE 00 - 27
       _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_,  // MODE 08 - 2F
-      _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_,  // MODE 00 - 37
+      _NONE_, _NONE_, _NONE_, _NONE_, 0x3a16, _NONE_, _NONE_, _NONE_,  // MODE 00 - 37
       _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_}, // MODE 08 - 3F
       //mode0: green, mode2: mem(end<<4 | start ), mode4:green1,
     { 0x0000, 0x0f0f, 0x1129, 0x1b23, 0x2800, 0x050d, 0x0b32, 0x0a12,  // 00 - 07
@@ -127,14 +128,14 @@ uint8_t byteArray[4][9] = {
       0x331e, 0x3a29, 0x2422, 0x2d15, 0x2f05, 0x2632, 0x331a, 0x310a, 
       0x383f, 0x2f07, 0x1a2c, 0x1738, 0x173a, 0x0002, 0x0d14, 0x352b},
     // mode0: attack+random, mode2: none, mode4: green2
-    { 0x0000, 0x2037, 0x2e38, 0x3320, 0x3c18, _NONE_, _NONE_, _NONE_, 
-      0x0d05, 0x0628, 0x2b2b, 0x2006, 0x1a36, _NONE_, _NONE_, _NONE_, 
-      0x2c39, 0x1d24, 0x3d13, 0x1608, 0x1010, _NONE_, _NONE_, _NONE_, 
-      0x261f, 0x1702, 0x230c, 0x0137, 0x363e, _NONE_, _NONE_, _NONE_,  
-      0x0b2d, 0x281d, 0x321a, 0x0307, _NONE_, _NONE_, _NONE_, _NONE_, 
-      0x082a, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_,  
-      0x3a0c, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, 
-      0x2b1a, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_},  
+    { 0x0000,	0x2037,	0x2E38,	0x3320,	0x3C18,	0x1E23,	0x0D08,	0x380D,	/* Byte 5 (Attack/Random), 00-07 */
+      0x0D05,	0x0628,	0x2B2B,	0x2006,	0x1A36,	0x1F14,	0x3D1E,	0x0C03,	/* Byte 5 (Attack/Random), 08-0F */
+      0x2C39,	0x1D24,	0x3D13,	0x1609,	0x1010,	0x210D,	0x0C0E,	0x0723,	/* Byte 5 (Attack/Random), 10-17 */
+      0x261F,	0x1702,	0x230C,	0x0137,	0x363E,	0x150E,	0x3539,	0x3E14,	/* Byte 5 (Attack/Random), 18-1F */
+      0x0B2D,	0x281D,	0x321A,	0x0307,	0x1900,	0x0F35,	0x3937,	0x0418,	/* Byte 5 (Attack/Random), 20-27 */
+      0x082A,	0x1B3D,	0x3C15,	0x2A20,	0x2330,	0x3505,	0x2F02,	0x1E1F,	/* Byte 5 (Attack/Random), 28-2F */
+      0x3A0C,	0x3121,	0x3B07,	0x302A,	0x0513,	0x0E3E,	0x2D32,	0x180B,	/* Byte 5 (Attack/Random), 30-37 */
+      0x2B1A,	0x3D2F,	0x340E,	0x1635,	0x2E09,	0x383C,	0x223B,	0x0921},	/* Byte 5 (Attack/Random), 38-3F */
     // mode0: release+hold, mode2: none, mode4: red2
     { 0x0000, 0x0506, 0x3f19, 0x2420, 0x1532, 0x0e39, 0x090f, 0x2b33, 
       0x0b14, 0x0407, 0x2e1e, 0x210d, 0x3038, 0x0534, 0x3a34, 0x2412,  
@@ -145,14 +146,15 @@ uint8_t byteArray[4][9] = {
       0x3725, 0x3836, 0x1a38, 0x152b, 0x1107, 0x1e14, 0x0e12, 0x0a3e, 
       0x0a15, 0x1e3f, 0x0f21, 0x142a, 0x1b12, 0x0f38, 0x1b0b, 0x111e},
     // mode0: group, mode2: group??, mode4: blue2
-    { 0x0000, 0x2F16, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, 
-      _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, 
-      _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, 
-      _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_,  
-      _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, 
-      _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_,  
-      _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, 
-      _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_}};  
+    { 0x0000,	0x2F16,	0x0920,	0x033B,	0x273A,	0x2D08,	0x3A03,	0x1214,	 /* Byte 7 (Group), 00-07 */
+      0x2223,	0x330C,	0x1D3F,	0x0C10,	0x1826,	0x2F3F,	0x060B,	0x0312,	 /* Byte 7 (Group), 08-0F */
+      0x3424,	0x313D,	0x1E2B,	0x2012,	0x3018,	0x3501,	0x1B32,	0x0A1D,	 /* Byte 7 (Group), 10-17 */
+      0x1C1A,	0x1903,	0x0805,	0x0237,	0x0F04,	0x3C27,	0x1331,	0x021E,	 /* Byte 7 (Group), 18-1F */
+      0x112F,	0x220C,	0x192C,	0x1C35,	0x2715,	0x3C21,	0x0803,	0x2D0E,	 /* Byte 7 (Group), 20-27 */
+      0x0D1A,	0x2137,	0x3F1A,	0x242E,	0x3323,	0x2817,	0x1337,	0x162E,	 /* Byte 7 (Group), 28-2F */
+      0x2F10,	0x3E3F,	0x1601,	0x072E,	0x141F,	0x0530,	0x0D35,	0x1E04,	 /* Byte 7 (Group), 30-37 */
+      0x3E39,	0x250D,	0x1106,	0x1B34,	0x2A26,	0x3112,	0x0A32,	0x340B}, /* Byte 7 (Group), 38-3F */
+      };  
 
   uint16_t setCRC(uint8_t *message) {          // set calculated CRC in the given message
     // return CRC1 and CRC2 values as a 16-bit word : 00aaaaaa 00bbbbbb, a is the CRC1 value, b is the CRC2 value
@@ -263,18 +265,14 @@ uint8_t byteArray[4][9] = {
       Serial.println();
     }
   void showBuffer(uint8_t* buffer){                                 // print buffer (plain + encoded)
-    Serial.print("LC: ");
+    Serial.print("[True, ");
     for(uint8_t i = 0; i < 9; i++ ) {
-      Serial.print(lineCode(buffer[i]),HEX);
-      Serial.print(" ");
-      }
-    Serial.print("P: ");
-    for(uint8_t i = 0; i < 9; i++ ) {
+      Serial.print("0x");
       if( buffer[i] < 0x10) Serial.print("0");
       Serial.print(buffer[i],HEX);
-      Serial.print(" ");
+      if(i<8) Serial.print(", ");
       }
-    Serial.print("\r\n");
+    Serial.print("]\r\n");
     }
   void clearSerial(){                                               // read and discard data on serial port
     while (Serial.available() > 0){
@@ -441,12 +439,22 @@ uint8_t byteArray[4][9] = {
         showBuffer(byteArray[2]);
         exec = 'c';
         break;
-      case 'd':  // transfer string and brute CRC
+      case 'd':  // CRC brute force 
+        Serial.println(" CRC-byte-test ");
+        valueInput();
+        Serial.print("testByte (1-7) =:");           testByte=( (uint8_t) readCliHex() ) & 0x7;
+        Serial.print("start crcH (0-3f) = (hex8):"); byteArray[2][0]=( (uint8_t) readCliHex() ) & 0x3f;
+        Serial.print("start crcL (0-3f) = (hex8):"); byteArray[2][8]=( (uint8_t) readCliHex() ) & 0x3f; 
+        Serial.print(" .. testing .. \r\n");
+        showBuffer(byteArray[2]);
+        exec = 'd';
+        break;
+      case 'f':  // transfer string and brute CRC
         Serial.println(" transfer & brute CRC ");
         plainInput();                              //get plain values
         setCRC(byteArray[2]);
         showBuffer(byteArray[2]);
-        exec = 'd';
+        exec = 'f';
         index=0x03;
         break;
       case 'w':  // custom transfer plain string
@@ -478,7 +486,8 @@ uint8_t byteArray[4][9] = {
         Serial.println(" a - send raw 6b8b frame");
         Serial.println(" b - send raw plain frame");
         Serial.println(" c - send values + brute the CRC");
-        Serial.println(" d - send values + CRC from table");
+        Serial.println(" d - brute the CRC for 1 tx-byte");
+        Serial.println(" f - send values + CRC from table");
         Serial.println(" w - response test - hex-string");
         Serial.println(" ? - this help");
         Serial.println(SEPARATOR);
@@ -529,7 +538,7 @@ uint8_t byteArray[4][9] = {
 //
 // ------------------ SUBS --------------------
   void done(){
-    if(exec != 'q') Serial.print("--- DONE ---");
+    if(exec != 'w') Serial.print("--- DONE ---");
     index=1;
     crcTest=false;
     }
@@ -640,8 +649,8 @@ uint8_t byteArray[4][9] = {
         Serial.print(h,HEX);
         if((superValue % 0x100) == 0) Serial.println();
         
+        } 
       } 
-    } 
 
     }
 //  
@@ -671,7 +680,7 @@ void loop() {
             Serial.print(byteArray[2][8],HEX);
             Serial.print("\r\nfound\r\n");
             }
-          if(exec != 'q') showBuffer(byteArray[2]);
+          if(exec != 'w') showBuffer(byteArray[2]);
           else Serial.println("!!");
           if((exec == 'd') | (exec == 'e')){
             next(1);
@@ -683,7 +692,7 @@ void loop() {
             getPortD = 0;
           #endif            
           } 
-        else if(exec != 'q'){
+        else if(exec != 'w'){
           if(repeat < repeatSet) repeat++;
           //if(false) repeat++;
           else{
