@@ -94,12 +94,12 @@ uint8_t byteArray[4][9] = {
   uint16_t table[7][64] = {
     { 0x0000, _NONE_, 0x3D30, _NONE_, 0x1e2d, _NONE_, _NONE_, _NONE_,  // MODE 00 - 07
       _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_,  // MODE 08 - 0F
-      _NONE_, _NONE_, _NONE_, _NONE_, 0x222d, _NONE_, _NONE_, _NONE_,  // MODE 00 - 17
-      _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_,  // MODE 08 - 1F
-      _NONE_, _NONE_, _NONE_, _NONE_, 0x2000, _NONE_, _NONE_, _NONE_,  // MODE 00 - 27
-      _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_,  // MODE 08 - 2F
-      _NONE_, _NONE_, _NONE_, _NONE_, 0x3a16, _NONE_, _NONE_, _NONE_,  // MODE 00 - 37
-      _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_}, // MODE 08 - 3F
+      0x0c3b, _NONE_, 0x1130, _NONE_, 0x222d, _NONE_, _NONE_, _NONE_,  // MODE 10 - 17
+      _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_,  // MODE 18 - 1F
+      0x3b30, _NONE_, 0x171d, _NONE_, 0x2000, _NONE_, _NONE_, _NONE_,  // MODE 20 - 27
+      _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_,  // MODE 28 - 2F
+      _NONE_, _NONE_, 0x2d1d, _NONE_, 0x3a16, _NONE_, _NONE_, _NONE_,  // MODE 30 - 37
+      _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_}, // MODE 38 - 3F
       //mode0: green, mode2: mem(end<<4 | start ), mode4:green1,
     { 0x0000, 0x0f0f, 0x1129, 0x1b23, 0x2800, 0x050d, 0x0b32, 0x0a12,  // 00 - 07
       0x2d25, 0x3c14, 0x223a, 0x330b, 0x271f, 0x2808, 0x3901, 0x3c24,  // 08 - 0F
