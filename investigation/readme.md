@@ -1,5 +1,12 @@
- ADVNACED:
-   + pinmapping like basic - plus extra
+listRules.py:
+--
+- this script generates missing values of table[0] based on XOR-rules found in table[1] 
+- it also shows a walking 0 and a walking 1 with valid checksum
+
+   
+advanced.ino:
+-- 
+   + pinmapping like basic.ino - plus extra
      - Arduino GND--> soic8 8 GND    advanced only
      - Arduino  0 --> soic8 5 RED    advanced only
      - Arduino  1 --> soic8 7 GREEN  advanced only
@@ -25,21 +32,3 @@ I started a little bruteforce-session ... the results are in the folder ../color
    - so i only can use 5 pixmobs in parallel each zeroW one and the zero2 two.
    - i have to stitch the files per hand
    - I will automate this a bit... next time
-
-MULTI FRONTEND:
- + this is made for automatic bruteforcing with more clients. the idea is that one pi zero can handle all traffic and store all forced data.
- + flow:
-   - pi requests all serial interfaces with magiccharacter to get the number of connected endpoints  
-   - pi sends color-data to the free enpoint
-   - the endpoint forces the crc
-   - color and crc are reported back to pi
-   - pi stores the values in a file and marks the endpoint as idle again
-   - repeat
- + each arduino can handle 2 endpoints without additional hardware or 8 endpoints with mcp23017 port extender
-
-readList.py:
-+ process the brute force data in colorBrute folder
-+ verify the values
-  - all my values seem to be +1 in CRC
-  - there are no CRC values with ( even crcA and a crcB = 0x05)  and ( odd crcA and crcB = 0x3f) 
-
