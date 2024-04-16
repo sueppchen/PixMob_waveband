@@ -34,10 +34,10 @@ _NONE_ = 0x0000     # missing values are replaced by _NONE_ (0x0000) for calcula
            #   0       1       2       3       4       5       6       7       8       9       A       B       C       D       E       F
 table  = [ 
            # mode
-           [0x0000, 0x0c2d, 0x3d30, _NONE_, 0x1e2d, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_,  # 0
-            0x0c3b, 0x1d1d, 0x1130, 0x262d, 0x222d, 0x330b, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, 0x2c3b, 0x170b,  # 1 
+           [0x0000, _NONE_, 0x3d30, _NONE_, 0x1e2d, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_,  # 0
+            0x0c3b, 0x1d1d, 0x1130, 0x262d, 0x222d, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_,  # 1 
             0x3b30, _NONE_, 0x171d, _NONE_, 0x2000, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_,  # 2
-            0x2200, 0x1930, 0x2d1d, 0x162d, 0x3a16, 0x0126, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_],  # 3
+            0x2200, 0x1930, 0x2d1d, 0x162d, 0x3a16, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_, _NONE_],  # 3
            # mode0: green, mode2: mem(end<<4 | start ), mode4:green1,
            [0x0000, 0x0f0f, 0x1129, 0x1b23, 0x2800, 0x050d, 0x0b32, 0x0a12, 0x2d25, 0x3c14, 0x223a, 0x330b, 0x271f, 0x2808, 0x3901, 0x3c24,  # 0
             0x153c, 0x1019, 0x1f16, 0x0128, 0x0138, 0x041d, 0x1a33, 0x0b02, 0x331b, 0x363e, 0x0008, 0x2d05, 0x0e27, 0x143c, 0x1b33, 0x0a02,  # 1
@@ -89,7 +89,7 @@ def main(args):
         #generate walking on and off bit
         for bit in range(41,-1,-1):
             number = (1 << bit)
-            mode   = (number >> 36) & 0x0
+            mode   = (number >> 36) & 0x3f
             green  = (number >> 30) & 0x3f
             red    = (number >> 24) & 0x3f
             blue   = (number >> 18) & 0x3f
@@ -122,7 +122,7 @@ def main(args):
     def showResetList():
         for bit in range(41,-1,-1):
             number = 0x3FFFFFFFFFF ^ (1 << bit)
-            mode   = (number >> 36) & 0x0
+            mode   = (number >> 36) & 0x3f
             green  = (number >> 30) & 0x3f
             red    = (number >> 24) & 0x3f
             blue   = (number >> 18) & 0x3f
@@ -152,9 +152,6 @@ def main(args):
     #              " %s " % f'{crcY:012b}' +
                   " ")
 
-    showSetList()
-    showResetList()
-
     
     def ror12(value,bits):
         helper =  value >> bits
@@ -168,19 +165,45 @@ def main(args):
 
 
     print("XOR with neigbour")
+    rulesList =[]
 
-    for step in range(1,62):
-        print(step)
-        for tab in range(1,2):       #startList, endlist+1
+    newZero = [0] * 64
+    tab = 1
+    
+    newZero = table[0]
+    
+    for run in range(2):
+        inputList = newZero
+        for step in range(1,62):
             for index in range(1,(64-step)):
                 neighbor = table[tab][index+step] ^ table[tab][(index)]
-                
                 for i in range(64):
                     value = table[tab][i]
                     if(value == neighbor):
-                        print("[0x%s] " % f'{(index):02x}' + " ^ [0x%s] " % f'{(index+step):02x}' + "= [0x%s]" % f'{(i):02x}')
+                        if((table[0][index] > 0) and (table[0][(index+step)] > 0 )):
+                            print("[0x%s] " % f'{(index):02x}' + " ^ [0x%s] " % f'{(index+step):02x}' + "= [0x%s] = " % f'{(i):02x}',end ="")
+                            print("0x%s " % f'{(table[0][index] ^ table[0][(index+step)]):04x}')
+                            if(table[0][i] ==0 ):
+                                newZero[i] = table[0][index] ^ table[0][(index+step)]
+                            else:
+                                newZero[i] = table[0][i]
+    
+    print("show calculated table")
+
+    print("[ ", end = "")
+    for entry in range(64):
+        newValue = newZero[entry]        
+        print("0x%s, " % f'{(newValue):04x}', end="")
+        if(((entry + 1) % 0x10) == 0):
+            print("   # %d" % int(entry / 0x10))
+    print("],")
+    
+    table[0] = newZero
+    showSetList()
+    showResetList()
 
     print("done")
+
  
     return 0
 
