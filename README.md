@@ -1,13 +1,15 @@
 # PixMob_waveband reverse engineering
+--
 
 the project:
+-
   reverse engineering pixmob RF enabled waveband (868MHz european edition)
   
   got it working thanks to https://github.com/danielweidman/pixmob-ir-reverse-engineering
   and  https://www.hackster.io/abouhatab/reusing-pixmob-waveband-without-flipper-zero-040f3a
 
 the object:
-
+-
   + got a waveband labeled "cement v1.1"
   ![all](https://github.com/sueppchen/PixMob_waveband/assets/58486836/6f24268f-cfc5-4daa-93ae-c9d2c14f122d)
   
@@ -63,14 +65,19 @@ the object:
       * hold    6:2..0 (0-7) = 0ms, 30ms, 100ms, 200ms, 500ms, 1000ms, 2500ms, infinite
     - Background timeout range is from about 0.5 second to about 60 seconds according to the HOLD value (from 0 to 7) in the message setting the background color.  
 
-![timing1](https://github.com/sueppchen/PixMob_waveband/assets/58486836/7edfed66-dd12-40f3-a30b-8f9e245992b8)
+    ![timing1](https://github.com/sueppchen/PixMob_waveband/assets/58486836/7edfed66-dd12-40f3-a30b-8f9e245992b8)
 
-![timing2](https://github.com/sueppchen/PixMob_waveband/assets/58486836/72125370-ecef-4c2f-8bf7-4f00ef518a4f)
+    ![timing2](https://github.com/sueppchen/PixMob_waveband/assets/58486836/72125370-ecef-4c2f-8bf7-4f00ef518a4f)
+
+    - checksum is an XOR checksum of a 12 bit subchecksum of each databyte
+      * initial Value ^ 12bit checksum byte 0 ^ 12bit checksum byte 1 ... 12bit checksum byte 6
+      * 6 bits of this checksum are before and 6 bit after transmition 
 
 what we need to get it running:
+-
   hardware: arduino Pro micro(atMega32u4), levelshifter, TI CC1101, (soic08 clamp)
   
-  BASIC:
+  basic.ino:
    + basic Pin Mapping:
      - Arduino  6 --> (levelshifter) --> CC1101 gdo2 (you don't need this pin) 
      - Arduino  7 --> levelshifter --> CC1101 gdo0
@@ -85,7 +92,7 @@ what we need to get it running:
    + the "basic" arduino script shows how to enable the waveband with an TI CC1101 transceiver and fixed messages
    + there is a basic CLI over USBserial@115200: type ? [enter] for help
   
-  play.ino
+  play.ino:
    + simple programm to play with pixmob batch.
    + data is send by basic CLI
      - w\r\n    mode byte 1, byte 2, byte 3, byte 4, byte 5, byte 6 \r\n (all hex, 6 bit)
