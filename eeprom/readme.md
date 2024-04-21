@@ -10,11 +10,11 @@ always a read before write is performed:
 - 0x00 = 0x0D ( if changed all eeprom-contend is set to default values)
 - 0x01 = MASTER group register ( register@ value + 0x08 is read as group )
 - 0x02 = 
-- 0x03
+- 0x03 =
 - 0x04 = 0x00 RX-mode / 0x11 eeprom-mode
-- 0x05
-- 0x06
-- 0x07
+- 0x05 =
+- 0x06 =
+- 0x07 =
 - 0x08 = group register 0
 - 0x09 = group register 1
 - 0x0A = group register 2
@@ -24,10 +24,10 @@ always a read before write is performed:
 - 0x0E = group register 6
 - 0x0F = group register 7
 
-- 0x10 : custom color 0x0 green
-- 0x11 : custom color 0x0 red
-- 0x12 : custom color 0x0 blue
-- 0x13 : custom color 0x0 white? 
+- 0x10 : custom color 0x0 green value = (0 - 63) << 2
+- 0x11 : custom color 0x0 red   value = (0 - 63) << 2
+- 0x12 : custom color 0x0 blue  value = (0 - 63) << 2
+- 0x13 : custom color 0x0 checksum (green + red + blue) & 0xff 
 
 - 0x14 - 0x17 : custom color 0x1
 - 0x18 - 0x1B : custom color 0x2
