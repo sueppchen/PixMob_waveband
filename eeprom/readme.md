@@ -7,22 +7,22 @@ always a read before write is performed:
 + if not eqal: write possition
 
    
-- 0x00
-- 0x01
-- 0x02
+- 0x00 = 0x0D ( if changed all eeprom-contend is set to default values)
+- 0x01 = MASTER group register ( register@ value + 0x08 is read as group )
+- 0x02 = 
 - 0x03
 - 0x04 = 0x00 RX-mode / 0x11 eeprom-mode
 - 0x05
 - 0x06
 - 0x07
-- 0x08
-- 0x09
-- 0x0A
-- 0x0B
-- 0x0C
-- 0x0D
-- 0x0E
-- 0x0F
+- 0x08 = group register 0
+- 0x09 = group register 1
+- 0x0A = group register 2
+- 0x0B = group register 3
+- 0x0C = group register 4
+- 0x0D = group register 5
+- 0x0E = group register 6
+- 0x0F = group register 7
 
 - 0x10 : custom color 0x0 green
 - 0x11 : custom color 0x0 red
