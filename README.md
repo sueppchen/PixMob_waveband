@@ -70,7 +70,7 @@ the object:
     - LED values = 0 - 63 with dimmer-curve 0.5% - 94%
     - RX bytes:  < mode, G, R, B, attack/random (AAArrr), release/hold (RRRHHH), group >
     - dual-flash bytes: < mode, G1, R1, B1, G2, R2, B2 >
-    - EEprom-read bytes: < mode, End/Start (EESSSS), attack/random/end (AAArEE), release/hold (RRRHHH), ??, ??, group( rGGGGG >
+    - EEprom-read bytes: < mode, End/Start (EESSSS), attack/random/end (AAArEE), release/hold (RRRHHH), ??, ??, group (rGGGGG) >
       * byte 6.5 = random.0
       * byte x.x = random.1 (havn't found that bit yet... it is always 1 - maybe a mode-bit)
       * byte 2.2 = random.2
