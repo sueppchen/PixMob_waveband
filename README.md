@@ -1,14 +1,14 @@
 # PixMob_waveband reverse engineering
 --
 
-the project:
+## the project:
 -
   reverse engineering pixmob RF enabled waveband (868MHz european edition)
   
   got it working thanks to https://github.com/danielweidman/pixmob-ir-reverse-engineering
   and  https://www.hackster.io/abouhatab/reusing-pixmob-waveband-without-flipper-zero-040f3a
 
-the object:
+## the object:
 -
   + got a waveband labeled "cement v1.1"
   ![all](https://github.com/sueppchen/PixMob_waveband/assets/58486836/6f24268f-cfc5-4daa-93ae-c9d2c14f122d)
@@ -17,8 +17,7 @@ the object:
 
   + data is [transmitted](https://github.com/sueppchen/PixMob_waveband/wiki/transmission) with a [checksum] only by RF and encoded with special [6b8b line code](https://github.com/sueppchen/PixMob_waveband/wiki/6b8b-line-code) to stay in sync.
 
-
-what we need to get it running:
+## what we need to get it running:
 -
   hardware: arduino Pro micro(atMega32u4), levelshifter, TI CC1101, (soic08 clamp)
   
