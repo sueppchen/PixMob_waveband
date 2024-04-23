@@ -19,20 +19,14 @@
 
 ## what we need to get it running:
 -
-  hardware: arduino Pro micro(atMega32u4), levelshifter, TI CC1101, (soic08 clamp)
-  
+  hardware: 
+   - arduino 
+   - TI CC1101
+   - levelshifter (if the arduino is 5V variant)
+   - ( soic08 clamp: good for development - but the most hardware-work is done) 
+   - connect all together (see [connection](https://github.com/sueppchen/PixMob_waveband/wiki/connection) )
+    
  ### basic.ino:
-   + basic Pin Mapping:
-     - Arduino  6 --> (levelshifter) --> CC1101 gdo2 (you don't need this pin) 
-     - Arduino  7 --> levelshifter --> CC1101 gdo0
-     - Arduino 10 --> levelshifter --> CC1101 CS
-     - Arduino MISO --> (levelshifter) --> CC1101 SO
-     - Arduino SCLK --> levelshifter --> CC1101 SCLK
-     - Arduino MOSI --> levelshifter --> CC1101 SI
-     - Arduino 13 --> arduino internal LED (does not work for ATmega32u4)
-     - 3.3V --> CC1101 3.3V input (my levelshifter does provide 3.3V power)
-     - If you only have a quad levelshifter (like me) you don't need to shift SO and gdo2.
-  
    + the "basic" arduino script shows how to enable the waveband with an TI CC1101 transceiver and fixed messages
    + there is a basic CLI over USBserial@115200: type ? [enter] for help
   
