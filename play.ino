@@ -11,7 +11,10 @@
  NO TX:
   Arduino nano / mini Pro ATmega328
   GND, R, G, B, SCL, SDA, TX, (VCC5)
+
+ full controll of pixmob device
  
+
 */
 // ------------ global ------------
 #if defined(__AVR_ATmega32U4__)      //automatic select between boards
@@ -62,100 +65,40 @@
   #endif
 
 uint8_t index, indexAlt;
-bool rxReady, match, ledValue; 
-uint8_t h; 
+bool rxReady, ledValue; 
+uint8_t h, exec; 
 bool sclin = 1, sclAlt=1;
-
 uint64_t superInput,h64;
+
+uint8_t mode;
+bool forever, once, dual, txOn, mem;                                      //logic
+uint8_t red, green, blue, red2, green2, blue2, bgRed, bgGreen, bgBlue;    //colors
+uint8_t attack, hold, release, tRandom;                                   //timing
+uint8_t memStore, memRandom, memFrom, memTo;                              //memory
+uint8_t group, groupMem, groupStore;                                      //group
+
 
 uint8_t byteArray[4][9] = {
   // 0     1     2     3     4     5     6     7     8       
   // 0b1101010, 0b100001, 0b100001, 0b100001, 0b100001, 0b1000110, 0b1101100, 0b100001, 0b10010100
   // 6a
-  {0x1B, 0x00, 0x00, 0x00, 0x00, 0x08, 0x0F, 0x00, 0x15}, //1, black as background, active for 1 minute
+  {0x32, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02}, //1, black as background, active for 1 minute
   {0x37, 0x00, 0x00, 0x3f, 0x00, 0x38, 0x3E, 0x00, 0x20}, //2, red, smoooooooth fade
-  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, //3, test-string
-  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, //4, test-string2
+  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, //3, FX
+  {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, //4, background
   };
 
 // ------------------ TX ---------------------- tx related stuff
-  #define INIT 0x3202  // reference CRC = CRC of message "32 00 00 00 00 00 00 00 02"
-  uint16_t table[7][64] = {
-    { 0x0000, 0x0c2d, 0x3d30, 0x283b, 0x1e2d, 0x1b26, 0x3726, 0x130b, 
-      0x0f0b, 0x343b, 0x0726, 0x3c16, 0x1600, 0x1c2d, 0x291d, 0x383b,    
-      0x0c3b, 0x1d1d, 0x1130, 0x262d, 0x222d, 0x330b, 0x0016, 0x3b26, 
-      0x3816, 0x2930, 0x0200, 0x070b, 0x2a00, 0x2016, 0x2c3b, 0x170b,    
-      0x3b30, 0x3126, 0x171d, 0x063b, 0x2000, 0x0e3b, 0x2c2d, 0x350b, 
-      0x3d0b, 0x191d, 0x2600, 0x083b, 0x0a16, 0x242d, 0x0216, 0x1330,    
-      0x2200, 0x1930, 0x2d1d, 0x162d, 0x3a16, 0x0126, 0x0326, 0x2f1d, 
-      0x371d, 0x1926, 0x2b30, 0x2e3b, 0x0d0b, 0x2330, 0x050b, 0x3216},   
-    //mode0: green, mode2: mem(end<<4 | start ), mode4:green1,
-    { 0x0000, 0x0f0f, 0x1129, 0x1b23, 0x2800, 0x050d, 0x0b32, 0x0a12,  // 00 - 07
-      0x2d25, 0x3c14, 0x223a, 0x330b, 0x271f, 0x2808, 0x3901, 0x3c24,  // 08 - 0F
-      0x153c, 0x1019, 0x1f16, 0x0128, 0x0138, 0x041d, 0x1a33, 0x0b02,  // 10 - 17
-      0x331b, 0x363e, 0x0008, 0x2d05, 0x0e27, 0x143c, 0x1b33, 0x0a02,  // 18 - 1F
-      0x1131, 0x0b2a, 0x1031, 0x1514, 0x0e0f, 0x1534, 0x0100, 0x0405,  // 20 - 27
-      0x0425, 0x1009, 0x0e17, 0x152c, 0x1a1b, 0x0120, 0x1a3b, 0x1f1e,  // 28 - 2F
-      0x0e07, 0x1f36, 0x3911, 0x2820, 0x3313, 0x2222, 0x222a, 0x3919,  // 30 - 37
-      0x1e3e, 0x0505, 0x3636, 0x1b3b, 0x2d2d, 0x3616, 0x2d0d, 0x3333}, // 38 - 3f
-    // mode0: red, mode2: attack+random, mode4: red1
-    { 0x0000, 0x3a1b, 0x3f02, 0x0e2d, 0x0e2f, 0x020f, 0x0005, 0x0d25, 
-      0x083f, 0x0b37, 0x0715, 0x041d, 0x0105, 0x0714, 0x3532, 0x3322,
-      0x0103, 0x0713, 0x3d08, 0x041b, 0x312a, 0x373a, 0x3b18, 0x3810, 
-      0x312c, 0x373c, 0x093b, 0x051b, 0x3e00, 0x0107, 0x3b1c, 0x3814,
-      0x0308, 0x3c0f, 0x030c, 0x051c, 0x3a1f, 0x0838, 0x0004, 0x0b30, 
-      0x0614, 0x3222, 0x0615, 0x3432, 0x3f07, 0x0d20, 0x3223, 0x3433,
-      0x3324, 0x302c, 0x0003, 0x030b, 0x3817, 0x3b1f, 0x3224, 0x0938, 
-      0x3913, 0x0b34, 0x3e07, 0x3227, 0x0104, 0x3323, 0x0c20, 0x3533},
-    // mode0: blue, mode2: release+hold, mode4: blue1
-    { 0x0000, 0x3108, 0x1108, 0x0f07, 0x373b, 0x3a2f, 0x0b20, 0x0630, 
-      0x0212, 0x0b25, 0x3e0d, 0x373a, 0x0b24, 0x2213, 0x2935, 0x1c1c, 
-      0x2426, 0x110f, 0x2007, 0x1838, 0x152f, 0x2006, 0x152e, 0x1c19, 
-      0x3a2d, 0x0f04, 0x1528, 0x183c, 0x2930, 0x3318, 0x0210, 0x0b27, 
-      0x0937, 0x131f, 0x1e09, 0x2b20, 0x2636, 0x310e, 0x173e, 0x3839, 
-      0x2217, 0x1c18, 0x3e09, 0x2931, 0x1a28, 0x0d10, 0x0006, 0x352f, 
-      0x331e, 0x3a29, 0x2422, 0x2d15, 0x2f05, 0x2632, 0x331a, 0x310a, 
-      0x383f, 0x2f07, 0x1a2c, 0x1738, 0x173a, 0x0002, 0x0d14, 0x352b},
-    // mode0: attack+random, mode2: none, mode4: green2
-    { 0x0000,	0x2037,	0x2E38,	0x3320,	0x3C18,	0x1E23,	0x0D08,	0x380D,	/* Byte 5 (Attack/Random), 00-07 */
-      0x0D05,	0x0628,	0x2B2B,	0x2006,	0x1A36,	0x1F14,	0x3D1E,	0x0C03,	/* Byte 5 (Attack/Random), 08-0F */
-      0x2C39,	0x1D24,	0x3D13,	0x1609,	0x1010,	0x210D,	0x0C0E,	0x0723,	/* Byte 5 (Attack/Random), 10-17 */
-      0x261F,	0x1702,	0x230C,	0x0137,	0x363E,	0x150E,	0x3539,	0x3E14,	/* Byte 5 (Attack/Random), 18-1F */
-      0x0B2D,	0x281D,	0x321A,	0x0307,	0x1900,	0x0F35,	0x3937,	0x0418,	/* Byte 5 (Attack/Random), 20-27 */
-      0x082A,	0x1B3D,	0x3C15,	0x2A20,	0x2330,	0x3505,	0x2F02,	0x1E1F,	/* Byte 5 (Attack/Random), 28-2F */
-      0x3A0C,	0x3121,	0x3B07,	0x302A,	0x0513,	0x0E3E,	0x2D32,	0x180B,	/* Byte 5 (Attack/Random), 30-37 */
-      0x2B1A,	0x3D2F,	0x340E,	0x1635,	0x2E09,	0x383C,	0x223B,	0x0921},	/* Byte 5 (Attack/Random), 38-3F */
-    // mode0: release+hold, mode2: none, mode4: red2
-    { 0x0000, 0x0506, 0x3f19, 0x2420, 0x1532, 0x0e39, 0x090f, 0x2b33, 
-      0x0b14, 0x0407, 0x2e1e, 0x210d, 0x3038, 0x0534, 0x3a34, 0x2412,  
-      0x230f, 0x3d29, 0x382f, 0x323a, 0x1236, 0x0c10, 0x2609, 0x291a, 
-      0x0101, 0x1f27, 0x1006, 0x0b0d, 0x373c, 0x012a, 0x042c, 0x0b3f,  
-      0x0f13, 0x3905, 0x2d36, 0x3310, 0x2723, 0x3309, 0x2225, 0x3c1a, 
-      0x3c03, 0x1d25, 0x1729, 0x0303, 0x3616, 0x223c, 0x360f, 0x2829,  
-      0x3725, 0x3836, 0x1a38, 0x152b, 0x1107, 0x1e14, 0x0e12, 0x0a3e, 
-      0x0a15, 0x1e3f, 0x0f21, 0x142a, 0x1b12, 0x0f38, 0x1b0b, 0x111e},
-    // mode0: group, mode2: group??, mode4: blue2
-    { 0x0000,	0x2F16,	0x0920,	0x033B,	0x273A,	0x2D08,	0x3A03,	0x1214,	 /* Byte 7 (Group), 00-07 */
-      0x2223,	0x330C,	0x1D3F,	0x0C10,	0x1826,	0x2F3F,	0x060B,	0x0312,	 /* Byte 7 (Group), 08-0F */
-      0x3424,	0x313D,	0x1E2B,	0x2012,	0x3018,	0x3501,	0x1B32,	0x0A1D,	 /* Byte 7 (Group), 10-17 */
-      0x1C1A,	0x1903,	0x0805,	0x0237,	0x0F04,	0x3C27,	0x1331,	0x021E,	 /* Byte 7 (Group), 18-1F */
-      0x112F,	0x220C,	0x192C,	0x1C35,	0x2715,	0x3C21,	0x0803,	0x2D0E,	 /* Byte 7 (Group), 20-27 */
-      0x0D1A,	0x2137,	0x3F1A,	0x242E,	0x3323,	0x2817,	0x1337,	0x162E,	 /* Byte 7 (Group), 28-2F */
-      0x2F10,	0x3E3F,	0x1601,	0x072E,	0x141F,	0x0530,	0x0D35,	0x1E04,	 /* Byte 7 (Group), 30-37 */
-      0x3E39,	0x250D,	0x1106,	0x1B34,	0x2A26,	0x3112,	0x0A32,	0x340B}, /* Byte 7 (Group), 38-3F */
-      };  
-
-  uint16_t setCRC(uint8_t *message) {          // set calculated CRC in the given message
-    // return CRC1 and CRC2 values as a 16-bit word : 00aaaaaa 00bbbbbb, a is the CRC1 value, b is the CRC2 value
-    uint16_t crc = INIT;
-    for(byte i=0;i<7;i++){
-      uint8_t value = (message[(i+1)]) & 0x3f;
-      crc ^= table[i][value];
-    }
-    message[0] = (crc>>8) & 0x3f;
-    message[8] = crc & 0x3f;
-    return crc;
-    }
+  #define INIT 0x1b05                            // initial value of XOR calculation
+  uint16_t table[7][8] = {
+    {0x2416, 0x082D, 0x371D, 0x2E3B, 0x3B30, 0x1126, 0x050B, 0x0A16},  // byte 1, bit 0 - 7
+    {0x142C, 0x0F1F, 0x1E3E, 0x1B3B, 0x1131, 0x0525, 0x2D0D, 0x1A1B},  // byte 2, bit 0 - 7
+    {0x3436, 0x0F2A, 0x3913, 0x3227, 0x0308, 0x0610, 0x0C20, 0x3F07},  // byte 3, bit 0 - 7
+    {0x3E0F, 0x3C1F, 0x383F, 0x1738, 0x0937, 0x3529, 0x0D14, 0x1A28},  // byte 4, bit 0 - 7
+    {0x1317, 0x262E, 0x2B1A, 0x1635, 0x0B2D, 0x311D, 0x223B, 0x2330},  // byte 5, bit 0 - 7
+    {0x2126, 0x250A, 0x0A15, 0x142A, 0x0F13, 0x1E26, 0x1B0B, 0x3616},  // byte 6, bit 0 - 7
+    {0x2C2D, 0x3F1C, 0x3E39, 0x1B34, 0x112F, 0x0519, 0x0A32, 0x3323}   // byte 7, bit 0 - 7
+    };  
   uint8_t dictTable[66] = {
     0x21,0x35,0x2c,0x34,0x66,0x26,0xac,0x24,     // 00-07
     0x46,0x56,0x44,0x54,0x64,0x6d,0x4c,0x6c,     // 08-0f
@@ -167,6 +110,23 @@ uint8_t byteArray[4][9] = {
     0x25,0x2d,0x69,0x29,0x4D,0x45,0x61,0x65,      // 38-3f
     0xaa,0x55};
 
+
+
+  uint16_t setCRC(uint8_t *message) {          // set calculated CRC in the given message
+    // return CRC1 and CRC2 values as a 16-bit word : 00aaaaaa 00bbbbbb, a is the CRC1 value, b is the CRC2 value
+    uint16_t crc = INIT;
+    for(uint8_t i=0;i<7;i++){
+      uint8_t value = (message[(i+1)]) & 0x3f;  // get value from message
+      uint8_t coded = dictTable[value];         // encode value to 6b8b
+      for(uint8_t bit = 0; bit < 8; bit++){
+        if(coded & (1<<bit)) crc ^= table[i][bit];
+        }
+      }
+
+    message[0] = (crc>>8) & 0x3f;
+    message[8] = crc & 0x3f;
+    return crc;
+    }
   void initTX(){                                                    // init transmiter 
     #ifdef TRANSMITTER
       Serial.print("init TX:");
@@ -348,19 +308,65 @@ uint8_t byteArray[4][9] = {
       case '1':  // transmitter on, black
         index=0x01;
         break;
-      case '2':  // transmitter on, smoth red fade - test device response
+      case 't':  // test: transmitter on, smoth red fade
         index=0x02;
         break;
-      case 'f':  // transfer string and brute CRC
-        Serial.println(" transfer & brute CRC ");
-        plainInput();                              //get plain values
+      case 'f':  // transfer string
+        Serial.println(" transfer custom ");
+        plainInput();                              //get plain values        
         setCRC(byteArray[2]);
         showBuffer(byteArray[2]);
-        //exec = 'f';
+        once = 0;
+        exec = 'f';
         index=0x03;
         break;
-      case 'w':  // custom transfer plain string
-        Serial.print("9 ");
+      case 'g':  // change working group
+        Serial.println("change working group");
+        Serial.print("group  = 0 - 31"); group = (((uint8_t) readCliDez()) & 0x1f);
+        break;
+      case 'w':  // write group to batch
+        Serial.println("write group to batch");
+        Serial.print("gpMEM = 0 -  7"); groupMem   = (((uint8_t) readCliDez()) & 0x07);
+        Serial.print("group = 1 - 31"); groupStore = (((uint8_t) readCliDez()) & 0x1f);
+        exec = 'w';
+        once = 1;
+        break;
+      case 'b':  // set Background
+        Serial.println("set background");
+        Serial.print("red    = 0 - 63"); bgRed   = (((uint8_t) readCliDez()) & 0x3f);
+        Serial.print("green  = 0 - 63"); bgGreen = (((uint8_t) readCliDez()) & 0x3f);
+        Serial.print("blue   = 0 - 63"); bgBlue  = (((uint8_t) readCliDez()) & 0x3f);
+        exec = 'b';
+        break;
+      case 'l':  // loop - mode
+        Serial.println("loop");
+        if(forever) Serial.println("disable");
+        else Serial.println("enable");
+        forever = 1 - forever;
+        exec = 'l';
+        break;
+      case 's':  // store color
+        Serial.println("store color");
+        Serial.print("memory = 0 - 15"); memStore = (((uint8_t) readCliDez()) & 0x0f);
+        Serial.print("red    = 0 - 63"); red   = (((uint8_t) readCliDez()) & 0x3f);
+        Serial.print("green  = 0 - 63"); green = (((uint8_t) readCliDez()) & 0x3f);
+        Serial.print("blue   = 0 - 63"); blue  = (((uint8_t) readCliDez()) & 0x3f);
+        setCRC(byteArray[2]);
+        once = 1;
+        break;
+      case 'p':  // play color 
+        Serial.println("play color");
+        Serial.print("from   mem  = 0 - 15"); memFrom   = (((uint8_t) readCliDez()) & 0x1f);
+        Serial.print(" to    mem  = 0 - 15"); memTo     = (((uint8_t) readCliDez()) & 0x1f);
+        Serial.print("random mem  = 0 -  7"); memRandom = (((uint8_t) readCliDez()) & 0x1f);
+        Serial.print("attack      = 0 -  7"); attack    = (((uint8_t) readCliDez()) & 0x1f);
+        Serial.print("hold        = 0 -  7"); hold      = (((uint8_t) readCliDez()) & 0x1f);
+        Serial.print("release     = 0 -  7"); release   = (((uint8_t) readCliDez()) & 0x1f);
+        Serial.print("random time = 0 -  7"); tRandom   = (((uint8_t) readCliDez()) & 0x1f);
+        once = 0;
+        break;
+      case 'q':  // fast transfer plain string
+        Serial.print("9");
         // 11 22 33 44 55 66 77
         superInput = readCliHex();
         byteArray[2][1] = (uint8_t)((superInput >> 48) & 0x3f);
@@ -369,7 +375,8 @@ uint8_t byteArray[4][9] = {
         byteArray[2][4] = (uint8_t)((superInput >> 24) & 0x3f);
         byteArray[2][5] = (uint8_t)((superInput >> 16) & 0x3f);
         byteArray[2][6] = (uint8_t)((superInput >> 8) & 0x3f);
-        byteArray[2][7] = (uint8_t)(superInput & 0x3f);;
+        byteArray[2][7] = (uint8_t)(superInput & 0x3f);
+        //countBytes =      (uint8_t)((superInput >> 56) & 0x7) + 2;
         setCRC(byteArray[2]);
         //exec = 'w';
         index=0x3;
@@ -380,9 +387,9 @@ uint8_t byteArray[4][9] = {
         Serial.println(SEPARATOR);
         Serial.println(" 0 - transmitter off, device sleep");
         Serial.println(" 1 - black, device wakeup");
-        Serial.println(" 2 - smoth red fade");
+        Serial.println(" t - smoth red fade");
         Serial.println(" f - send values + CRC from table");
-        Serial.println(" w - response test - hex-string");
+        Serial.println(" q - response test - hex-string");
         Serial.println(" ? - this help");
         Serial.println(SEPARATOR);
         break;
@@ -455,17 +462,25 @@ uint8_t byteArray[4][9] = {
     }
 
   void stayAlive(){
-    delay(40);
+    delay(10);
     sendMessage(byteArray[0]);                    //transmit wakeup
     }
 //  
 // ------------------ MAIN --------------------
 void loop() {
-  commandLineInterface();
+  commandLineInterface();  // get values
+  //set message according to mode
+  
+  if (mem) mode |= 0x02;
+
+  if(mode == 0x00){
+    
+  }
+
   if(index > 0) sendMessage(byteArray[index-1]);
   #ifndef TRANSMITTER
     digitalWrite(LED,ledValue);
   #endif
-  delay(40);
+  delay(100);
   indexAlt=index;
   }
