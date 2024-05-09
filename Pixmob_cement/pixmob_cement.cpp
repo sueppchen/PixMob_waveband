@@ -155,6 +155,36 @@ void Pixmob::generateTXbuffer(uint8_t * message){                           /// 
     }
     setCRC();
 }
-
+/*!
+  @brief  create the transmit buffer from message
+  @param  red
+          red value 0 - 63.
+  @param  green
+          green value 0 - 63.
+  @param  blue
+          blue value 0 - 63.
+  @param  attack
+          attack value 0 - 63.
+  @param  hold
+          hold value 0 - 7 (0 = background).
+  @param  release
+          release value 0 - 7 (7 = forever).
+  @param  random
+          random value 0 - 7 (0 = strait, 7 = extrem).
+  @param  group
+          group value 0 - 31 (0 = all).
+  @return message - array 
+ */
+uint8_t * Pixmob::basicColor(uint8_t red, uint8_t green, uint8_t blue, uint8_t attack, uint8_t hold, uint8_t release, uint8_t random, uint8_t group){
+    static uint8_t message[7];
+    message[0] = 0x00;                     //mode
+    message[1] = green & 0x3f;
+    message[2] = red   & 0x3f;
+    message[3] = blue  & 0x3f;
+    message[4] = ((attack  & 0x7) << 3) + (random & 0x7);
+    message[5] = ((release & 0x7) << 3) + (hold   & 0x7);
+    message[6] = group & 0x1f;
+    return message;
+} 
 /**************************************************************************/
 
