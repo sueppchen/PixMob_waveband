@@ -26,8 +26,6 @@ class Pixmob{
   public:
     Pixmob();
     bool begin(int pin);
-    void dot();
-    void dash();
     void reSend();
     void generateTXbuffer(uint8_t * message);
   private:
