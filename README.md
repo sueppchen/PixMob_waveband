@@ -35,6 +35,10 @@
    + data is send by basic CLI
      - w\r\n    mode byte 1, byte 2, byte 3, byte 4, byte 5, byte 6 \r\n (all hex, 6 bit)
      - f (interactiv)
+ 
+ ### content of the Pixmob_cement folder
+   + copy the whole folder to your arduino sketchbook/libraries folder
+   + now you can use the pixmob library with examples
     
 ## thanks to:
  [Daniel Weidman](https://github.com/danielweidman)
