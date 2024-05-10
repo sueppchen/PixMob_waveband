@@ -1,0 +1,16 @@
+# Syntax Coloring Map For ExampleLibrary
+
+# Datatypes (KEYWORD1)
+Pixmob	KEYWORD1
+
+# Methods and Functions (KEYWORD2)
+begin	KEYWORD2
+reSend	KEYWORD2
+generateTXbuffer	KEYWORD2
+basicColor	KEYWORD2
+
+# Instances (KEYWORD2)
+
+# Structures (KEYWORD3)
+
+# Constants (LITERAL1)
