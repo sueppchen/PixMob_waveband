@@ -9,10 +9,10 @@ always a read before write is performed:
    
 - 0x00 = 0x0D ( if changed all eeprom-contend is set to default values)
 - 0x01 = MASTER group register ( register@ value + 0x08 is read as group )
-- 0x02 = 
-- 0x03 =
+- 0x02 = some unknown attack/hold/release value
+- 0x03 = value 0x00 - 0xff unknown
 - 0x04 = 0x00 RX-mode / 0x11 eeprom-mode
-- 0x05 =
+- 0x05 = 
 - 0x06 =
 - 0x07 =
 - 0x08 = group register 0
