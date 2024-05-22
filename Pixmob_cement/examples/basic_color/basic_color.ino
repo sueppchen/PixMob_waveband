@@ -12,9 +12,9 @@
   send custom color with attaack and release
 */
 
-#define RED     30      // 0 - 63
-#define GREEN    5      // 0 - 63
-#define BLUE     0      // 0 - 63
+#define RED    128      // 0 - 255
+#define GREEN   30      // 0 - 255
+#define BLUE     0      // 0 - 255
 #define ATTACK   1      // 0 -  7 (0 = fast)
 #define HOLD     2      // 0 -  7 (7 = forever)
 #define RELEASE  2      // 0 -  7 (0 = background color)
