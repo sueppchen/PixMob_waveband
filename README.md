@@ -38,7 +38,7 @@
  
  ### content of the Pixmob_cement folder
    + copy the whole folder to your arduino sketchbook/libraries folder
-   + now you can use the pixmob library with examples
+   + now you can use the pixmob library with example(s)
     
 ## thanks to:
  [Daniel Weidman](https://github.com/danielweidman)
