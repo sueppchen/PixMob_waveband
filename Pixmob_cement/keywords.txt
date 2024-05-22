@@ -5,9 +5,23 @@ Pixmob	KEYWORD1
 
 # Methods and Functions (KEYWORD2)
 begin	KEYWORD2
-reSend	KEYWORD2
-generateTXbuffer	KEYWORD2
-basicColor	KEYWORD2
+refresh	KEYWORD2
+setConfirmColor	KEYWORD2
+setFXtiming	KEYWORD2
+sendColor	KEYWORD2
+sendColorOnce	KEYWORD2
+sendColorForever	KEYWORD2
+setBackground	KEYWORD2
+setBackgroundSilent	KEYWORD2
+storeColor	KEYWORD2
+storeColorSilent	KEYWORD2
+storeGroup	KEYWORD2
+setMasterGroup	KEYWORD2
+playMem	KEYWORD2
+playMemOnce	KEYWORD2
+playMemForever	KEYWORD2
+flashDual	KEYWORD2
+flashDualLong	KEYWORD2
 
 # Instances (KEYWORD2)
 
