@@ -43,12 +43,13 @@ Pixmob batch;
     Serial.println("done");
     delay(1000);
     
-    batch.generateTXbuffer(batch.basicColor(RED, GREEN, BLUE, ATTACK, HOLD, RELEASE, RANDOM, GROUP));
+    batch.setFXtiming(ATTACK, HOLD, RELEASE, RANDOM);
+    batch.sendColor(RED, GREEN, BLUE, GROUP);
     }
 //
 
 // ------------------ MAIN --------------------
 void loop() {
-  batch.reSend();
+  batch.refresh();
   delay(40);
   }
