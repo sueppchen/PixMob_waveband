@@ -22,6 +22,9 @@ playMemOnce	KEYWORD2
 playMemForever	KEYWORD2
 flashDual	KEYWORD2
 flashDualLong	KEYWORD2
+setMasterAHR
+setMasterRelease
+resetMasterRelease
 
 # Instances (KEYWORD2)
 
