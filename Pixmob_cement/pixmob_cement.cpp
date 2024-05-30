@@ -196,6 +196,8 @@ void Pixmob::setConfirmColor(uint8_t red, uint8_t green, uint8_t blue){
   confirmBlue  = blue;
 }
 
+
+
 /// send Color RX
     /*! *************************************************************************/
     void Pixmob::rxSend(uint8_t mode, uint8_t red, uint8_t green, uint8_t blue, uint8_t group){
@@ -466,10 +468,69 @@ void Pixmob::setConfirmColor(uint8_t red, uint8_t green, uint8_t blue){
     }
 
     /*!
-    #define SUBMODE_MHOLD       0x07
-    #define SUBMODE_MMEM        0x08
-    #define SUBMODE_MMRESET     0x0F
-    */
+      @brief  set master attack, hold, random(0x03) register + confirm 
+      @param  masterAHR
+              master Random Random, hold hold hold, attack attack attack
+      @param  group
+              group 0 - 31 (0 = all).
+     */
+    void Pixmob::setMasterAHR(uint8_t masterAHR, uint8_t group){
+        uint8_t b1 = (confirmGreen >> 4) | (((confirmRed >> 4) & 0x3) << 4);         /// rrGGGG
+        uint8_t b2 = ((confirmBlue >> 4) << 2) | (confirmRed >> 6) ;                 /// BBBBRR
+        batchWrite( b1, b2, (masterAHR & 0x3f), (masterAHR >> 6) , SUBMODE_MMEM, group);
+    }
+    /*!
+      @brief  set master attack, hold, random(0x03) register + confirm 
+      @param  masterAHR
+              master Random Random, hold hold hold, attack attack attack
+     */
+    void Pixmob::setMasterAHR(uint8_t masterAHR){
+        uint8_t b1 = (confirmGreen >> 4) | (((confirmRed >> 4) & 0x3) << 4);         /// rrGGGG
+        uint8_t b2 = ((confirmBlue >> 4) << 2) | (confirmRed >> 6) ;                 /// BBBBRR
+        batchWrite( b1, b2, (masterAHR & 0x3f), (masterAHR >> 6) , SUBMODE_MMEM, 0);
+    }
+
+    /*!
+      @brief  set master release(0x02) register + confirm 
+      @param  masterRelease
+              master Release register 0 - 7.
+      @param  group
+              group 0 - 31 (0 = all).
+     */
+    void Pixmob::setMasterRelease(uint8_t masterRelease, uint8_t group){
+        uint8_t b1 = (confirmGreen >> 4) | (((confirmRed >> 4) & 0x3) << 4);         /// rrGGGG
+        uint8_t b2 = ((confirmBlue >> 4) << 2) | (confirmRed >> 6) ;                 /// BBBBRR
+        batchWrite( b1, b2, 0, (masterRelease & 0x7) , SUBMODE_MHOLD, group);
+    }
+    /*!
+      @brief  set master release(0x02) register + confirm 
+      @param  masterRelease
+              master Release register 0 - 7.
+     */
+    void Pixmob::setMasterRelease(uint8_t masterRelease){
+        uint8_t b1 = (confirmGreen >> 4) | (((confirmRed >> 4) & 0x3) << 4);         /// rrGGGG
+        uint8_t b2 = ((confirmBlue >> 4) << 2) | (confirmRed >> 6) ;                 /// BBBBRR
+        batchWrite( b1, b2, 0, (masterRelease & 0x7) , SUBMODE_MHOLD, 0);
+    }
+
+    /*!
+      @brief  reset master timing (0x02 + 0x03) register + confirm 
+      @param  group
+              group 0 - 31 (0 = all).
+     */
+    void Pixmob::resetMasterRelease(uint8_t group){
+        uint8_t b1 = (confirmGreen >> 4) | (((confirmRed >> 4) & 0x3) << 4);         /// rrGGGG
+        uint8_t b2 = ((confirmBlue >> 4) << 2) | (confirmRed >> 6) ;                 /// BBBBRR
+        batchWrite( b1, b2, 0, 0, SUBMODE_MMRESET, group);
+    }
+    /*!
+      @brief  reset master timing (0x02 + 0x03) register + confirm 
+     */
+    void Pixmob::resetMasterRelease(){
+        uint8_t b1 = (confirmGreen >> 4) | (((confirmRed >> 4) & 0x3) << 4);         /// rrGGGG
+        uint8_t b2 = ((confirmBlue >> 4) << 2) | (confirmRed >> 6) ;                 /// BBBBRR
+        batchWrite( b1, b2, 0, 0, SUBMODE_MMRESET, 0);
+    }
 
 /// memory play
     /*! *************************************************************************/
