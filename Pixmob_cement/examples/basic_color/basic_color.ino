@@ -12,9 +12,9 @@
   send custom color with attaack and release
 */
 
-#define RED    128      // 0 - 255
-#define GREEN   30      // 0 - 255
-#define BLUE     0      // 0 - 255
+#define RED    128      // 0 - 63
+#define GREEN   30      // 0 - 63
+#define BLUE     0      // 0 - 63
 #define ATTACK   1      // 0 -  7 (0 = fast)
 #define HOLD     2      // 0 -  7 (7 = forever)
 #define RELEASE  2      // 0 -  7 (0 = background color)
@@ -25,13 +25,19 @@
 #include <pixmob_cement.h>
 
 // ------------ I/O ------------
-#define CLI_SPEED 115200                                           //ATmega328 = nano, Mini Pro
+#define CLI_SPEED 115200                                           
 #define TX 7                           // data output
 
 
 // ------------ TX ----------
 Pixmob batch;
 
+void activeDelay(uint16_t time){
+  for(uint16_t i = 0; i< (time/40); i++){
+    delay(40);
+    batch.refresh();
+  }
+}
 
 // ------------------ SETUP ------------------- arduino setup  
   void setup() {                                    //SETUP
@@ -42,14 +48,18 @@ Pixmob batch;
 
     Serial.println("done");
     delay(1000);
-    
-    batch.setFXtiming(ATTACK, HOLD, RELEASE, RANDOM);
-    batch.sendColor(RED, GREEN, BLUE, GROUP);
     }
 //
 
+
 // ------------------ MAIN --------------------
 void loop() {
-  batch.refresh();
-  delay(40);
+    batch.setFXtiming(0, 0, 0, 0);
+    batch.sendColor(0, 0, 0, 0);
+    activeDelay(5000);
+    batch.setFXtiming(ATTACK, HOLD, RELEASE, RANDOM);
+    batch.sendColor(RED, GREEN, BLUE, GROUP);
+    activeDelay(5000);
+    batch.flashDual(128, 0, 0, 0, 0, 128);
+    activeDelay(2000);
   }
