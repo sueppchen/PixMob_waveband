@@ -80,7 +80,7 @@ void activeDelay(uint16_t time){
   activeDelay(80);                            //  repeat sending 2 times 
   
 
-  batch.setFXtiming(7, 7, 0, 0);              // slowest attack, hold forever, be background for fading, no random 
+  batch.setFXtiming(7, 6, 0, 0);              // slowest attack, longest hold, be background for fading, no random 
   batch.playMemForever(0,11,0);               // fade color 0 to color 11
   activeDelay(80);                            //  repeat sending 2 times 
   }
