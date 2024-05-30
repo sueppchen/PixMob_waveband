@@ -72,6 +72,10 @@ class Pixmob{
     void playMem(uint8_t from, uint8_t to, uint8_t mRandom, uint8_t group);
     void playMemOnce(uint8_t from, uint8_t to, uint8_t mRandom, uint8_t group);
     void playMemForever(uint8_t from, uint8_t to, uint8_t mRandom, uint8_t group);
+    void setMasterAHR(uint8_t masterAHR, uint8_t group);
+    void setMasterRelease(uint8_t masterRelease, uint8_t group);
+    void resetMasterRelease(uint8_t group);
+
     void flashDual(uint8_t red1, uint8_t green1, uint8_t blue1, uint8_t red2, uint8_t green2, uint8_t blue2);
     void flashDualLong(uint8_t red1, uint8_t green1, uint8_t blue1, uint8_t red2, uint8_t green2, uint8_t blue2);
     void sendColor(uint8_t red, uint8_t green, uint8_t blue);
@@ -84,6 +88,9 @@ class Pixmob{
     void playMem(uint8_t from, uint8_t to, uint8_t mRandom);
     void playMemOnce(uint8_t from, uint8_t to, uint8_t mRandom);
     void playMemForever(uint8_t from, uint8_t to, uint8_t mRandom);
+    void setMasterAHR(uint8_t masterAHR);
+    void setMasterRelease(uint8_t masterRelease);
+    void resetMasterRelease();
   private:
     const uint8_t dictTable[64] = {
         0x21, 0x35, 0x2c, 0x34, 0x66, 0x26, 0xac, 0x24, 0x46, 0x56, 0x44, 0x54, 0x64, 0x6d, 0x4c, 0x6c,     ///< 6b-8b conversion table for 0x00 - 0x0f
