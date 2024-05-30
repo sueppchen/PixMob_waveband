@@ -12,9 +12,9 @@
   send custom color with attaack and release
 */
 
-#define RED    128      // 0 - 63
-#define GREEN   30      // 0 - 63
-#define BLUE     0      // 0 - 63
+#define RED    128      // 0 - 255
+#define GREEN   30      // 0 - 255
+#define BLUE     0      // 0 - 255
 #define ATTACK   1      // 0 -  7 (0 = fast)
 #define HOLD     2      // 0 -  7 (7 = forever)
 #define RELEASE  2      // 0 -  7 (0 = background color)
@@ -26,11 +26,12 @@
 
 // ------------ I/O ------------
 #define CLI_SPEED 115200                                           
-#define TX 7                           // data output
+#define TX 7                           // data output pin
 
 
 // ------------ TX ----------
-Pixmob batch;
+Pixmob batch;                          //create the pixmob instance
+
 
 void activeDelay(uint16_t time){
   for(uint16_t i = 0; i< (time/40); i++){
@@ -42,13 +43,17 @@ void activeDelay(uint16_t time){
 // ------------------ SETUP ------------------- arduino setup  
   void setup() {                                    //SETUP
 
-    Serial.begin(CLI_SPEED);                     // debug
+    Serial.begin(CLI_SPEED);                        // debug
     delay(3000);
-    batch.begin(TX);
-
-    Serial.println("done");
-    delay(1000);
+    if(!batch.begin(TX)){
+      Serial.println("CC1101 init fail");
+      while(true);                                  //loop forever
     }
+    else {
+      Serial.println("CC1101 init done");
+      delay(1000);
+    }
+  }
 //
 
 
