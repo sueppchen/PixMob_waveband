@@ -24,11 +24,12 @@ flashDual	KEYWORD2
 flashDualLong	KEYWORD2
 setMasterAHR	KEYWORD2
 setMasterRelease	KEYWORD2
-resetMasterRelease	KEYWORD2
-
+resetMasterTiming	KEYWORD2
 
 # Instances (KEYWORD2)
 
 # Structures (KEYWORD3)
 
 # Constants (LITERAL1)
+EU	LITERAL1
+US	LITERAL1
