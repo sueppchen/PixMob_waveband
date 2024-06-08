@@ -45,7 +45,7 @@ void activeDelay(uint16_t time){
 
     Serial.begin(CLI_SPEED);                        // debug
     delay(3000);
-    if(!batch.begin(TX)){
+    if(!batch.begin(TX,EU)){                        // use EU for 868 MHz and US for 915 MHz
       Serial.println("CC1101 init fail");
       while(true);                                  //loop forever
     }
