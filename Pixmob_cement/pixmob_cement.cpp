@@ -22,7 +22,7 @@
  *
  * 	@section  HISTORY
  *
- *     v0.2 - first update
+ *     v0.2.1
  */
 
 #include "Arduino.h"
@@ -38,9 +38,11 @@ Pixmob::Pixmob(){}
   @brief  Sets up the hardware and initializes output
   @param  pin
           output Pin to be used.
+  @param  frequency
+          operating frequency EU=868, US=915.
   @return true on success , false on error 
  */
-bool Pixmob::begin(int pin){
+bool Pixmob::begin(int pin, float frequency){
 
   #if defined __AVR_ATmega168__ || defined __AVR_ATmega328P__
     ELECHOUSE_cc1101.setSpiPin(13, 12, 11, 10);
@@ -74,7 +76,7 @@ bool Pixmob::begin(int pin){
       pinMode(_pin, OUTPUT);                                              ///  switch gdo0 to output - the library does not provide that.
       ELECHOUSE_cc1101.setModulation(2);                                  ///  set modulation mode. 0 = 2-FSK, 1 = GFSK, 2 = ASK/OOK, 3 = 4-FSK, 4 = MSK.
       ELECHOUSE_cc1101.setCCMode(0);                                      ///  set 1 config for internal FiFo mode. 0 for Assync external Mode
-      ELECHOUSE_cc1101.setMHZ(TX_FREQ);                                   ///  Here you can set your basic frequency. The lib calculates the frequency automatically (default = 433.92).The cc1101 can: 300-348 MHZ, 387-464MHZ and 779-928MHZ. Read More info from datasheet.
+      ELECHOUSE_cc1101.setMHZ(frequency);                                 ///  Here you can set your basic frequency. The lib calculates the frequency automatically (default = 433.92).The cc1101 can: 300-348 MHZ, 387-464MHZ and 779-928MHZ. Read More info from datasheet.
       ELECHOUSE_cc1101.setChannel(0);                                     ///  Set the Channelnumber from 0 to 255. Default is cahnnel 0.
       return 1;
   }
@@ -84,6 +86,16 @@ bool Pixmob::begin(int pin){
       
 }
 
+/*!
+  @brief  Sets up the hardware and initializes output
+  @param  pin
+          output Pin to be used.
+  @return true on success , false on error 
+ */
+ 
+bool Pixmob::begin(int pin){
+  begin(pin, EU);
+}
 /*! *************************************************************************/
 uint8_t Pixmob::lineCode(uint8_t inByte){                                 /// convert plain values into 6b8b line code
     inByte &= 0x3f;
@@ -225,8 +237,7 @@ void Pixmob::setConfirmColor(uint8_t red, uint8_t green, uint8_t blue){
               group value 0 - 31 (0 = all).
      */
     void Pixmob::sendColor(uint8_t red, uint8_t green, uint8_t blue, uint8_t group){
-      uint8_t mode = MODE_RX;
-      rxSend( mode, red, green, blue, group);
+      rxSend( MODE_RX, red, green, blue, group);
     }
     /*!
       @brief  send basic RGB FX color to batch
@@ -238,8 +249,7 @@ void Pixmob::setConfirmColor(uint8_t red, uint8_t green, uint8_t blue){
               blue value 0 - 255.
      */
     void Pixmob::sendColor(uint8_t red, uint8_t green, uint8_t blue){
-      uint8_t mode = MODE_RX;
-      rxSend( mode, red, green, blue, 0);
+      rxSend( MODE_RX, red, green, blue, 0);
     }
 
     /*!
@@ -267,8 +277,7 @@ void Pixmob::setConfirmColor(uint8_t red, uint8_t green, uint8_t blue){
               blue value 0 - 255.
      */
     void Pixmob::sendColorOnce(uint8_t red, uint8_t green, uint8_t blue){
-      uint8_t mode = MODE_RX | (1 << MODE_ONESHOT);
-      rxSend( mode, red, green, blue, 0);
+      sendColorOnce(red, green, blue, 0);
     }
 
     /*!
@@ -296,8 +305,7 @@ void Pixmob::setConfirmColor(uint8_t red, uint8_t green, uint8_t blue){
               blue value 0 - 255.
      */
     void Pixmob::sendColorForever(uint8_t red, uint8_t green, uint8_t blue){
-      uint8_t mode = MODE_RX | (1 << MODE_ONESHOT)| (1 << MODE_FOREVER);
-      rxSend( mode, red, green, blue, 0);
+      sendColorForever(red, green, blue, 0);
     }
 
 
@@ -325,9 +333,11 @@ void Pixmob::setConfirmColor(uint8_t red, uint8_t green, uint8_t blue){
               green value 0 - 255.
       @param  blue
               blue value 0 - 255.
+      @param  group
+              group value 0 - 31 (0 = all).
      */
-    void Pixmob::setBackground(uint8_t red, uint8_t green, uint8_t blue){
-        batchWrite( green >> 2, red >> 2, blue >> 2, SET_BG, SUBMODE_EEWRITE, 0);
+    void Pixmob::setBackground(uint8_t red, uint8_t green, uint8_t blue, uint8_t group){
+        batchWrite( green >> 2, red >> 2, blue >> 2, SET_BG, SUBMODE_EEWRITE, group);
     }
     /*!
       @brief  set the background color
@@ -337,25 +347,11 @@ void Pixmob::setConfirmColor(uint8_t red, uint8_t green, uint8_t blue){
               green value 0 - 255.
       @param  blue
               blue value 0 - 255.
-      @param  group
-              group value 0 - 31 (0 = all).
      */
-    void Pixmob::setBackground(uint8_t red, uint8_t green, uint8_t blue, uint8_t group){
-        batchWrite( green >> 2, red >> 2, blue >> 2, SET_BG, SUBMODE_EEWRITE, group);
+    void Pixmob::setBackground(uint8_t red, uint8_t green, uint8_t blue){
+        batchWrite( green >> 2, red >> 2, blue >> 2, SET_BG, SUBMODE_EEWRITE, 0);
     }
 
-    /*!
-      @brief  silent set the background color (while FX is playing)
-      @param  red
-              red value 0 - 255.
-      @param  green
-              green value 0 - 255.
-      @param  blue
-              blue value 0 - 255.
-     */
-    void Pixmob::setBackgroundSilent(uint8_t red, uint8_t green, uint8_t blue){
-        batchWrite( green >> 2, red >> 2, blue >> 2, SET_BG_SILENT, SUBMODE_EEWRITE, 0);
-    }
     /*!
       @brief  silent set the background color (while FX is playing)
       @param  red
@@ -370,22 +366,19 @@ void Pixmob::setConfirmColor(uint8_t red, uint8_t green, uint8_t blue){
     void Pixmob::setBackgroundSilent(uint8_t red, uint8_t green, uint8_t blue, uint8_t group){
         batchWrite( green >> 2, red >> 2, blue >> 2, SET_BG_SILENT, SUBMODE_EEWRITE, group);
     }
-
     /*!
-      @brief  store Color to eeprom + show color
+      @brief  silent set the background color (while FX is playing)
       @param  red
               red value 0 - 255.
       @param  green
               green value 0 - 255.
       @param  blue
               blue value 0 - 255.
-      @param  mem
-              memory bank 0 - 15.
      */
-    void Pixmob::storeColor(uint8_t red, uint8_t green, uint8_t blue, uint8_t mem){
-        uint8_t location =  STORE_COLOR | (mem & 0xf);
-        batchWrite( green >> 2, red >> 2, blue >> 2, location, SUBMODE_EEWRITE, 0);
+    void Pixmob::setBackgroundSilent(uint8_t red, uint8_t green, uint8_t blue){
+        batchWrite( green >> 2, red >> 2, blue >> 2, SET_BG_SILENT, SUBMODE_EEWRITE, 0);
     }
+
     /*!
       @brief  store Color to eeprom + show color
       @param  red
@@ -403,9 +396,8 @@ void Pixmob::setConfirmColor(uint8_t red, uint8_t green, uint8_t blue){
         uint8_t location =  STORE_COLOR | (mem & 0xf);
         batchWrite( green >> 2, red >> 2, blue >> 2, location, SUBMODE_EEWRITE, group);
     }
-
     /*!
-      @brief  silent store Color to eeprom (while FX is playing)
+      @brief  store Color to eeprom + show color
       @param  red
               red value 0 - 255.
       @param  green
@@ -414,13 +406,11 @@ void Pixmob::setConfirmColor(uint8_t red, uint8_t green, uint8_t blue){
               blue value 0 - 255.
       @param  mem
               memory bank 0 - 15.
-      @param  group
-              group value 0 - 31 (0 = all).
      */
-    void Pixmob::storeColorSilent(uint8_t red, uint8_t green, uint8_t blue, uint8_t mem){
-        uint8_t location =  STORE_COLOR_SILENT | (mem & 0xf);
-        batchWrite( green >> 2, red >> 2, blue >> 2, location, SUBMODE_EEWRITE, 0);
+    void Pixmob::storeColor(uint8_t red, uint8_t green, uint8_t blue, uint8_t mem){
+        storeColor(red, green, blue, mem, 0);
     }
+
     /*!
       @brief  silent store Color to eeprom (while FX is playing)
       @param  red
@@ -437,6 +427,22 @@ void Pixmob::setConfirmColor(uint8_t red, uint8_t green, uint8_t blue){
     void Pixmob::storeColorSilent(uint8_t red, uint8_t green, uint8_t blue, uint8_t mem, uint8_t group){
         uint8_t location =  STORE_COLOR_SILENT | (mem & 0xf);
         batchWrite( green >> 2, red >> 2, blue >> 2, location, SUBMODE_EEWRITE, group);
+    }
+    /*!
+      @brief  silent store Color to eeprom (while FX is playing)
+      @param  red
+              red value 0 - 255.
+      @param  green
+              green value 0 - 255.
+      @param  blue
+              blue value 0 - 255.
+      @param  mem
+              memory bank 0 - 15.
+      @param  group
+              group value 0 - 31 (0 = all).
+     */
+    void Pixmob::storeColorSilent(uint8_t red, uint8_t green, uint8_t blue, uint8_t mem){
+        storeColorSilent(red, green, blue, mem, 0);
     }
 
     /*!
@@ -485,10 +491,8 @@ void Pixmob::setConfirmColor(uint8_t red, uint8_t green, uint8_t blue){
               master Random Random, hold hold hold, attack attack attack
      */
     void Pixmob::setMasterAHR(uint8_t masterAHR){
-        uint8_t b1 = (confirmGreen >> 4) | (((confirmRed >> 4) & 0x3) << 4);         /// rrGGGG
-        uint8_t b2 = ((confirmBlue >> 4) << 2) | (confirmRed >> 6) ;                 /// BBBBRR
-        batchWrite( b1, b2, (masterAHR & 0x3f), (masterAHR >> 6) , SUBMODE_MMEM, 0);
-    }
+        setMasterAHR(masterAHR, 0);
+        }
 
     /*!
       @brief  set master release(0x02) register + confirm 
@@ -508,9 +512,7 @@ void Pixmob::setConfirmColor(uint8_t red, uint8_t green, uint8_t blue){
               master Release register 0 - 7.
      */
     void Pixmob::setMasterRelease(uint8_t masterRelease){
-        uint8_t b1 = (confirmGreen >> 4) | (((confirmRed >> 4) & 0x3) << 4);         /// rrGGGG
-        uint8_t b2 = ((confirmBlue >> 4) << 2) | (confirmRed >> 6) ;                 /// BBBBRR
-        batchWrite( b1, b2, 0, (masterRelease & 0x7) , SUBMODE_MHOLD, 0);
+        setMasterRelease(masterRelease, 0 );
     }
 
     /*!
@@ -518,7 +520,7 @@ void Pixmob::setConfirmColor(uint8_t red, uint8_t green, uint8_t blue){
       @param  group
               group 0 - 31 (0 = all).
      */
-    void Pixmob::resetMasterRelease(uint8_t group){
+    void Pixmob::resetMasterTiming(uint8_t group){
         uint8_t b1 = (confirmGreen >> 4) | (((confirmRed >> 4) & 0x3) << 4);         /// rrGGGG
         uint8_t b2 = ((confirmBlue >> 4) << 2) | (confirmRed >> 6) ;                 /// BBBBRR
         batchWrite( b1, b2, 0, 0, SUBMODE_MMRESET, group);
@@ -526,10 +528,8 @@ void Pixmob::setConfirmColor(uint8_t red, uint8_t green, uint8_t blue){
     /*!
       @brief  reset master timing (0x02 + 0x03) register + confirm 
      */
-    void Pixmob::resetMasterRelease(){
-        uint8_t b1 = (confirmGreen >> 4) | (((confirmRed >> 4) & 0x3) << 4);         /// rrGGGG
-        uint8_t b2 = ((confirmBlue >> 4) << 2) | (confirmRed >> 6) ;                 /// BBBBRR
-        batchWrite( b1, b2, 0, 0, SUBMODE_MMRESET, 0);
+    void Pixmob::resetMasterTiming(){
+        resetMasterTiming(0);
     }
 
 /// memory play
@@ -555,10 +555,12 @@ void Pixmob::setConfirmColor(uint8_t red, uint8_t green, uint8_t blue){
               end bank 0 - 15.
       @param  mRandom
               dice the next bank 0 - 7.
+      @param  group
+              group 0 - 31 (0 = all).
      */
-    void Pixmob::playMem(uint8_t from, uint8_t to, uint8_t mRandom){
+    void Pixmob::playMem(uint8_t from, uint8_t to, uint8_t mRandom, uint8_t group){
       uint8_t mode = (1 << MODE_MEM);
-      playSend( mode , from, to, mRandom, 0);
+      playSend( mode , from, to, mRandom, group);
     }
     /*!
       @brief  play from memory 
@@ -568,27 +570,11 @@ void Pixmob::setConfirmColor(uint8_t red, uint8_t green, uint8_t blue){
               end bank 0 - 15.
       @param  mRandom
               dice the next bank 0 - 7.
-      @param  group
-              group 0 - 31 (0 = all).
      */
-    void Pixmob::playMem(uint8_t from, uint8_t to, uint8_t mRandom, uint8_t group){
-      uint8_t mode = (1 << MODE_MEM);
-      playSend( mode , from, to, mRandom, group);
+    void Pixmob::playMem(uint8_t from, uint8_t to, uint8_t mRandom){
+      playMem( from,  to,  mRandom, 0);
     }
 
-    /*!
-      @brief  onshot play from memory 
-      @param  from
-              start bank 0 - 15.
-      @param  to
-              end bank 0 - 15.
-      @param  mRandom
-              dice the next bank 0 - 7.
-     */
-    void Pixmob::playMemOnce(uint8_t from, uint8_t to, uint8_t mRandom){
-      uint8_t mode = (1 << MODE_MEM) | (1 << MODE_ONESHOT);
-      playSend( mode , from, to, mRandom, 0);
-    }
     /*!
       @brief  onshot play from memory 
       @param  from
@@ -604,9 +590,8 @@ void Pixmob::setConfirmColor(uint8_t red, uint8_t green, uint8_t blue){
       uint8_t mode = (1 << MODE_MEM) | (1 << MODE_ONESHOT);
       playSend( mode , from, to, mRandom, group);
     }
-
     /*!
-      @brief  play from memory and loop forever 
+      @brief  onshot play from memory 
       @param  from
               start bank 0 - 15.
       @param  to
@@ -614,10 +599,10 @@ void Pixmob::setConfirmColor(uint8_t red, uint8_t green, uint8_t blue){
       @param  mRandom
               dice the next bank 0 - 7.
      */
-    void Pixmob::playMemForever(uint8_t from, uint8_t to, uint8_t mRandom){
-      uint8_t mode = (1 << MODE_MEM) | (1 << MODE_ONESHOT) | (1 << MODE_FOREVER);
-      playSend( mode , from, to, mRandom, 0);
+    void Pixmob::playMemOnce(uint8_t from, uint8_t to, uint8_t mRandom){
+      playMemOnce(from, to, mRandom, 0);
     }
+
     /*!
       @brief  play from memory and loop forever 
       @param  from
@@ -632,6 +617,18 @@ void Pixmob::setConfirmColor(uint8_t red, uint8_t green, uint8_t blue){
     void Pixmob::playMemForever(uint8_t from, uint8_t to, uint8_t mRandom, uint8_t group){
       uint8_t mode = (1 << MODE_MEM) | (1 << MODE_ONESHOT) | (1 << MODE_FOREVER);
       playSend( mode , from, to, mRandom, group);
+    }
+    /*!
+      @brief  play from memory and loop forever 
+      @param  from
+              start bank 0 - 15.
+      @param  to
+              end bank 0 - 15.
+      @param  mRandom
+              dice the next bank 0 - 7.
+     */
+    void Pixmob::playMemForever(uint8_t from, uint8_t to, uint8_t mRandom){
+      playMemForever(from, to, mRandom, 0);
     }
 
 /// dual flash
