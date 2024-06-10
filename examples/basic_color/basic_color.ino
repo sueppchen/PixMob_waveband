@@ -1,6 +1,4 @@
- examples/basic_color
-
-//*       testscript for PixMob waveband - (RF enabled crowd pixel)
+/*       testscript for PixMob waveband - (RF enabled crowd pixel)
 
  library - edition
 
