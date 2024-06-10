@@ -26,6 +26,7 @@
    - ( soic08 clamp: good for development - but the most hardware-work is done) 
    - connect all together (see [connection](https://github.com/sueppchen/PixMob_waveband/wiki/connection) )
    - put the library into your arduino sketchbook/libraries folder
+   - you need to have the SmartRC-CC1101-Driver-Lib from Little Satan installed - only this CC1101 lib is able to switch the transceiver into transparent mode. 
    - now you can use the pixmob library with example(s)
     
 ## thanks to:
