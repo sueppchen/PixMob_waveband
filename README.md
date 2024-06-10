@@ -37,7 +37,7 @@
      - f (interactiv)
  
  ### content of the Pixmob_cement folder
-   + copy the whole folder to your arduino sketchbook/libraries folder
+   + copy the whole folder to your arduino sketchbook/libraries folder or download [release v0.2.1](https://github.com/sueppchen/PixMob_waveband/releases/tag/pre)
    + now you can use the pixmob library with example(s)
     
 ## thanks to:
